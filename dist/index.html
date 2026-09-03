@@ -1,0 +1,4087 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="theme0">
+<head>
+<meta charset="UTF-8">
+<title>清枫速记</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei",Segoe UI,Roboto}
+body{
+  width:100vw;height:100vh;
+  -webkit-app-region:drag;
+  overflow:hidden;
+}
+.note{
+  width:100%;height:100%;
+  backdrop-filter: blur(6px);
+  border-radius:20px;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  position:relative;
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
+}
+.top-bar, .tab-bar{
+  user-select: none;
+  -webkit-user-select: none;
+}
+.theme-btn{
+  width:26px;height:26px;
+  border:none;border-radius:50%;
+  cursor:pointer;
+  font-size:12px;
+  -webkit-app-region:no-drag;
+  transition:0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.theme-btn:hover{
+  background:var(--btn-hover);
+}
+.round-btn{
+  width:26px;height:26px;
+  border:none;border-radius:50%;
+  cursor:pointer;
+  font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-app-region:no-drag;
+  transition:background 0.3s, color 0.3s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.round-btn:hover{
+  background:var(--btn-hover);
+}
+.round-btn.active{
+  background:var(--btn-hover);
+  color:#4CAF50;
+}
+.round-btn.close:hover{background:#ff5252;color:#fff}
+
+.file-name-tip{
+  position:absolute;
+  right:18px;
+  bottom:4px;
+  font-size:12px;
+  opacity:0.85;
+  pointer-events:none;
+  max-width:320px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  transition:color 0.3s;
+  z-index:1;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.top-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  transition:color 0.3s;
+}
+.left-bar{
+  display:flex;gap:8px;align-items:center;
+  -webkit-app-region:no-drag;
+}
+
+.btn-box{
+  display:flex;gap:6px;
+  align-items:center;
+  -webkit-app-region:no-drag;
+}
+
+#editor{
+  -webkit-app-region:no-drag;
+  flex:1;
+  width:100%;
+  border:none;outline:none;background:transparent;
+  font-size:15px;line-height:1.6;
+  overflow-y:auto;
+  min-height:0;
+  user-select:text;
+  transition:color 0.3s;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  position:relative;
+  padding-left: 0.25em;
+  padding-right: 0.25em;
+  font-family: "Microsoft YaHei", Consolas, "Courier New", monospace;
+  white-space: pre-wrap;
+  color: var(--text-editor);
+}
+#editor img {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 4px 0;
+  border-radius: 4px;
+}
+#editor:empty:before{
+  content:"> Ctrl + 1/2/3/4/5  切换对应标签页\A > Ctrl + U  网页转笔记\A > Ctrl + A/C/X/V/Z  全/复/剪/粘/撤\A > Ctrl + O/S/N  打开/保存/新建\A > Ctrl + =/+ 导出文件夹(包括md与图片文件夹)\A > Tab  切换 迷你/主窗口\A > F11  全屏截图并插入（迷你窗口也可触发）\A > Esc  关闭\A > 拖拽进标签页1 可插入文本/图片\A > 拖拽出标签页1 可批量保存图片\A > 拖拽进标签页3  检测所有链接并生成快捷方式";
+  pointer-events:none;
+  transition:color 0.3s;
+  white-space:pre-wrap;
+  color: var(--text-placeholder);
+}
+#editor::-webkit-scrollbar{
+  width:3px;
+}
+#editor::-webkit-scrollbar:horizontal{
+  height:3px;
+}
+#editor::-webkit-scrollbar-track{
+  background:transparent;
+}
+#editor::-webkit-scrollbar-thumb{
+  border-radius:3px;
+  transition:background 0.3s;
+}
+#editor::-webkit-scrollbar-thumb:hover{
+  transition:background 0.3s;
+}
+
+.tab-bar{
+  display:flex;
+  gap:12px;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  padding:4px 0 4px;
+  position:relative;
+  z-index:10;
+  -webkit-app-region:no-drag;
+  min-height:40px;
+  flex-shrink:0;
+}
+.tab-bar::-webkit-scrollbar{
+  height:2px;
+}
+.tab-bar::-webkit-scrollbar-track{
+  background:transparent;
+}
+.tab-bar::-webkit-scrollbar-thumb{
+  border-radius:2px;
+  background:var(--scroll);
+  transition:background 0.3s;
+}
+.tab-bar::-webkit-scrollbar-thumb:hover{
+  background:var(--scroll-hover);
+  transition:background 0.3s;
+}
+
+.tab-item{
+  min-width:32px;
+  height:32px;
+  line-height:32px;
+  text-align:center;
+  border-radius:9999px;
+  font-size:13px;
+  flex-shrink:0;
+  padding:0 8px;
+  position:relative;
+  border:1px solid var(--tab-border);
+  color:var(--text-title);
+  cursor:pointer;
+  pointer-events:auto;
+  -webkit-app-region:no-drag;
+  transition:background 0.3s, color 0.3s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.tab-item.clip{
+  font-size:11px;
+}
+.tab-item.has_content::after{
+  content:"";
+  position:absolute;
+  left:10%;
+  right:10%;
+  bottom:-4px;
+  height:2px;
+  border-radius:1px;
+  background:var(--tab-underline);
+  transition:background 0.3s;
+}
+.tab-item.empty{
+  opacity:0.55;
+  border-style:dashed;
+}
+.tab-item.active{
+  background:var(--tab-active-bg);
+  color:var(--tab-active-text);
+}
+.tab-item:not(.active):hover{
+  background:var(--btn-hover);
+  color:#ffffff;
+}
+
+.clip-panel{
+  -webkit-app-region:no-drag;
+  flex:1;
+  width:100%;
+  overflow-y:auto;
+  padding:0;
+  display:none;
+  font-size:15px;
+  line-height:1.6;
+  min-height:0;
+  transition:color 0.3s;
+}
+.clip-panel.show{
+  display:block;
+}
+.clip-panel::-webkit-scrollbar{
+  width:3px;
+}
+.clip-panel::-webkit-scrollbar-track{
+  background:transparent;
+}
+.clip-panel::-webkit-scrollbar-thumb{
+  border-radius:3px;
+  transition:background 0.3s;
+}
+.clip-panel::-webkit-scrollbar-thumb:hover{
+  transition:background 0.3s;
+}
+.todo-panel{
+  -webkit-app-region:no-drag;
+  flex:1;
+  width:100%;
+  overflow-y:auto;
+  padding:0;
+  display:none;
+  font-size:15px;
+  line-height:1.6;
+  min-height:0;
+  transition:color 0.3s;
+}
+.todo-panel.show{
+  display:block;
+}
+.todo-panel::-webkit-scrollbar{
+  width:3px;
+}
+.todo-panel::-webkit-scrollbar-track{
+  background:transparent;
+}
+.todo-panel::-webkit-scrollbar-thumb{
+  border-radius:3px;
+  transition:background 0.3s;
+}
+.todo-panel::-webkit-scrollbar-thumb:hover{
+  transition:background 0.3s;
+}
+.blank-panel{
+  -webkit-app-region:no-drag;
+  flex:1;
+  width:100%;
+  overflow-y:auto;
+  padding:8px 4px;
+  display:none;
+  font-size:13px;
+  line-height:1.4;
+  min-height:0;
+  transition:color 0.3s;
+}
+.blank-panel.show{
+  display:block;
+}
+.blank-panel::-webkit-scrollbar{
+  width:3px;
+}
+.blank-panel::-webkit-scrollbar-track{
+  background:transparent;
+}
+.blank-panel::-webkit-scrollbar-thumb{
+  border-radius:3px;
+  background:var(--scroll);
+  transition:background 0.3s;
+}
+.blank-panel::-webkit-scrollbar-thumb:hover{
+  background:var(--scroll-hover);
+  transition:background 0.3s;
+}
+.quick-section{
+  margin-bottom:12px;
+}
+.keep-awake-bar{
+  padding:0 8px 8px;
+}
+.keep-awake-btn{
+  width:100%;
+  border:1px solid var(--border);
+  background:var(--btn-bg);
+  color:var(--text-title);
+  border-radius:10px;
+  padding:6px 12px;
+  font-size:12px;
+  cursor:pointer;
+  -webkit-app-region:no-drag;
+  transition:background 0.2s, color 0.2s, border-color 0.2s;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.keep-awake-btn:hover{
+  background:var(--btn-hover);
+}
+.keep-awake-btn.active{
+  color:#4CAF50;
+  border-color:#4CAF50;
+}
+.quick-title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 8px 4px;
+}
+.quick-title{
+  font-weight:bold;
+  font-size:14px;
+  opacity:0.85;
+  color:var(--text-title);
+  padding:0 8px 4px;
+}
+.quick-title-row .quick-title{
+  padding:0;
+}
+.quick-add-btn{
+  border:none;
+  background:var(--btn-bg);
+  color:var(--text-title);
+  border-radius:12px;
+  padding:2px 10px;
+  font-size:12px;
+  cursor:pointer;
+  -webkit-app-region:no-drag;
+  transition:background 0.2s;
+}
+.quick-add-btn:hover{
+  background:var(--btn-hover);
+}
+.quick-drop-active{
+  background:var(--btn-hover);
+  color:#ff5252;
+}
+.quick-upload-menu{
+  background:var(--panel-bg);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:4px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  min-width:120px;
+}
+.quick-upload-item{
+  padding:8px 12px;
+  border-radius:6px;
+  font-size:12px;
+  color:var(--text-title);
+  cursor:pointer;
+  transition:background 0.15s;
+}
+.quick-upload-item:hover{
+  background:var(--btn-hover);
+}
+.quick-grid{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:8px;
+  padding:0 4px;
+}
+.quick-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:8px 4px;
+  border-radius:8px;
+  cursor:pointer;
+  position:relative;
+  -webkit-app-region:no-drag;
+  transition:background 0.2s;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.quick-item:hover{
+  background:var(--clip-item-hover);
+}
+.quick-list{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:0 4px;
+}
+.quick-list-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:8px 10px;
+  border-radius:8px;
+  cursor:pointer;
+  position:relative;
+  -webkit-app-region:no-drag;
+  transition:background 0.2s;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.quick-list-item:hover{
+  background:var(--clip-item-hover);
+}
+.quick-list-name{
+  flex:1;
+  font-size:13px;
+  color:var(--text-editor);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  min-width:0;
+}
+.quick-icon{
+  width:40px;
+  height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:4px;
+}
+.quick-icon img{
+  width:32px;
+  height:32px;
+}
+.quick-icon span{
+  font-size:28px;
+}
+.quick-name{
+  font-size:12px;
+  text-align:center;
+  color:var(--text-editor);
+  width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  line-height:1.3;
+  word-break:break-all;
+}
+.quick-del{
+  position:absolute;
+  top:2px;
+  right:4px;
+  width:18px;
+  height:18px;
+  line-height:16px;
+  text-align:center;
+  border-radius:50%;
+  font-size:13px;
+  color:var(--text-editor);
+  opacity:0;
+  cursor:pointer;
+  transition:opacity 0.2s;
+}
+.quick-item:hover .quick-del{
+  opacity:0.6;
+}
+.quick-del:hover{
+  opacity:1 !important;
+  background:rgba(0,0,0,0.1);
+}
+.quick-empty{
+  grid-column:1 / -1;
+  text-align:center;
+  padding:16px 0;
+  font-size:12px;
+  opacity:0.5;
+  color:var(--text-editor);
+}
+.clip-empty{
+  text-align:center;
+  padding:8px 0;
+  font-size:13px;
+  opacity:0.6;
+  margin:0;
+}
+.clip-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 8px;
+  margin:0 0 4px 0;
+  border-radius:6px;
+  cursor:pointer;
+  -webkit-app-region:no-drag;
+  transition:0.2s;
+  background:var(--clip-item-bg);
+  color:var(--text-editor);
+  user-select:none;
+  -webkit-user-select:none;
+}
+.clip-item:hover{
+  background:var(--clip-item-hover);
+}
+.clip-text{
+  flex:1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:14px;
+  min-width:0;
+}
+.clip-time{
+  flex-shrink:0;
+  font-size:12px;
+  opacity:0.6;
+}
+.todo-group-title{
+  padding:6px 8px;
+  font-weight:bold;
+  opacity:0.85;
+  margin:6px 0 2px;
+}
+.todo-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:6px 6px;
+  margin:0 0 3px 0;
+  border-radius:6px;
+  cursor:pointer;
+  -webkit-app-region:no-drag;
+  transition:0.2s;
+  background:var(--clip-item-bg);
+  color:var(--text-editor);
+  user-select:none;
+  -webkit-user-select:none;
+}
+.todo-item:hover{
+  background:var(--clip-item-hover);
+}
+.todo-text{
+  flex:1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:14px;
+  outline:none;
+  user-select:text;
+  -webkit-user-select:text;
+  min-width:0;
+}
+.todo-check{
+  width:16px;
+  height:16px;
+  border-radius:3px;
+  border:1px solid var(--tab-border);
+  margin-right:6px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.todo-check.checked{
+  background:var(--tab-active-bg);
+  color:#fff;
+}
+.todo-del{
+  font-size:12px;
+  opacity:0.6;
+  margin-left:8px;
+  flex-shrink:0;
+}
+
+.drag-placeholder {
+  height: 2px;
+  background: #8866dd;
+  margin: 2px 0;
+  pointer-events: none;
+  border-radius: 1px;
+}
+
+.context-menu {
+  position: fixed;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 0;
+  min-width: 120px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.context-menu-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-editor);
+  transition: background 0.2s;
+}
+.context-menu-item:hover {
+  background: var(--clip-item-hover);
+}
+
+html.theme0, html.theme0 .note {
+  --bg-main:rgba(242, 238, 255, 1);
+  --border:rgba(220, 210, 245, 1);
+  --text-title:#5c4b99;
+  --text-editor:#3d3266;
+  --text-placeholder:#9284b8;
+  --text-tip:#6b58a8;
+  --btn-bg:rgba(180,160,230,0.45);
+  --btn-hover:rgba(180,160,230,0.65);
+  --scroll:#c3b9e8;
+  --scroll-hover:#a898dd;
+  --tab-border:#b8a8e0;
+  --tab-active-bg:#b8a8e0;
+  --tab-active-text:#fff;
+  --tab-underline:#7b62c2;
+  --theme-btn-bg:rgba(180,160,230,0.45);
+  --clip-item-bg:rgba(230,225,250,0.6);
+  --clip-item-hover:rgba(215,205,245,0.8);
+}
+
+html.theme1, html.theme1 .note {
+  --bg-main:rgba(254, 252, 232, 1);
+  --border:rgba(230, 220, 180, 1);
+  --text-title:#8c7030;
+  --text-editor:#5a4822;
+  --text-placeholder:#b8a070;
+  --text-tip:#806838;
+  --btn-bg:rgba(220,190,130,0.45);
+  --btn-hover:rgba(220,190,130,0.65);
+  --scroll:#e0c898;
+  --scroll-hover:#c8ac78;
+  --tab-border:#d8bc88;
+  --tab-active-bg:#d8bc88;
+  --tab-active-text:#fff;
+  --tab-underline:#a88848;
+  --theme-btn-bg:rgba(220,190,130,0.45);
+  --clip-item-bg:rgba(245,238,210,0.6);
+  --clip-item-hover:rgba(230,215,180,0.8);
+}
+
+html.theme2, html.theme2 .note {
+  --bg-main:rgba(230, 252, 242, 1);
+  --border:rgba(180, 230, 210, 1);
+  --text-title:#207858;
+  --text-editor:#185842;
+  --text-placeholder:#60a888;
+  --text-tip:#288868;
+  --btn-bg:rgba(120,200,170,0.45);
+  --btn-hover:rgba(120,200,170,0.65);
+  --scroll:#98d8bc;
+  --scroll-hover:#68c0a4;
+  --tab-border:#78c8a8;
+  --tab-active-bg:#78c8a8;
+  --tab-active-text:#fff;
+  --tab-underline:#289870;
+  --theme-btn-bg:rgba(120,200,170,0.45);
+  --clip-item-bg:rgba(210,245,230,0.6);
+  --clip-item-hover:rgba(180,230,210,0.8);
+}
+
+html.theme3, html.theme3 .note {
+  --bg-main:rgba(255, 238, 245, 1);
+  --border:rgba(245, 200, 220, 1);
+  --text-title:#a03868;
+  --text-editor:#702848;
+  --text-placeholder:#d088a8;
+  --text-tip:#b04878;
+  --btn-bg:rgba(230,140,170,0.45);
+  --btn-hover:rgba(230,140,170,0.65);
+  --scroll:#e8a8c0;
+  --scroll-hover:#d878a0;
+  --tab-border:#e098b8;
+  --tab-active-bg:#e098b8;
+  --tab-active-text:#fff;
+  --tab-underline:#b83868;
+  --theme-btn-bg:rgba(230,140,170,0.45);
+  --clip-item-bg:rgba(250,225,235,0.6);
+  --clip-item-hover:rgba(240,200,220,0.8);
+}
+
+html.theme4, html.theme4 .note {
+  --bg-main:rgba(235, 246, 255, 1);
+  --border:rgba(190, 220, 245, 1);
+  --text-title:#285898;
+  --text-editor:#1c4070;
+  --text-placeholder:#78a0d0;
+  --text-tip:#3068a8;
+  --btn-bg:rgba(110,170,220,0.45);
+  --btn-hover:rgba(110,170,220,0.65);
+  --scroll:#a8c8e8;
+  --scroll-hover:#78a8d8;
+  --tab-border:#88b8e0;
+  --tab-active-bg:#88b8e0;
+  --tab-active-text:#fff;
+  --tab-underline:#2868b8;
+  --theme-btn-bg:rgba(110,170,220,0.45);
+  --clip-item-bg:rgba(220,238,252,0.6);
+  --clip-item-hover:rgba(190,220,245,0.8);
+}
+
+html.theme5, html.theme5 .note {
+  --bg-main:rgba(40, 42, 48, 1);
+  --border:rgba(80, 85, 95, 1);
+  --text-title:#c0c8d8;
+  --text-editor:#e0e8f0;
+  --text-placeholder:#788090;
+  --text-tip:#a0a8b8;
+  --btn-bg:rgba(90,100,120,0.6);
+  --btn-hover:rgba(120,130,150,0.75);
+  --scroll:#606878;
+  --scroll-hover:#808898;
+  --tab-border:#707888;
+  --tab-active-bg:#606878;
+  --tab-active-text:#fff;
+  --tab-underline:#9098a8;
+  --theme-btn-bg:rgba(90,100,120,0.6);
+  --clip-item-bg:rgba(55,58,66,0.6);
+  --clip-item-hover:rgba(70,75,88,0.8);
+}
+
+.note{
+  background:var(--bg-main);
+  border:1px solid var(--border);
+}
+.top-bar{color:var(--text-title);}
+.left-bar,.btn-box{color:var(--text-title);}
+.theme-btn{background:var(--theme-btn-bg);color:var(--text-title);}
+.round-btn{background:var(--btn-bg);color:var(--text-title);}
+#editor{color:var(--text-editor);}
+#editor:empty:before{color:var(--text-placeholder);}
+.clip-panel{color:var(--text-editor);}
+.todo-panel{color:var(--text-editor);}
+.file-name-tip{color:var(--text-tip);}
+#editor::-webkit-scrollbar-thumb,
+.clip-panel::-webkit-scrollbar-thumb,
+.todo-panel::-webkit-scrollbar-thumb,
+.tab-bar::-webkit-scrollbar-thumb{
+  background:var(--scroll);
+}
+#editor::-webkit-scrollbar-thumb:hover,
+.clip-panel::-webkit-scrollbar-thumb:hover,
+.todo-panel::-webkit-scrollbar-thumb:hover,
+.tab-bar::-webkit-scrollbar-thumb:hover{
+  background:var(--scroll-hover);
+}
+.md-preview{
+  flex:1;
+  width:100%;
+  min-height:0;
+  padding:0 4px;
+  overflow-y:auto;
+  display:none;
+  color:var(--text-editor);
+  font-size:15px;
+  line-height:1.6;
+  font-family: "Microsoft YaHei", Consolas, "Courier New", monospace;
+  word-wrap:break-word;
+  word-break:break-word;
+  user-select:text;
+  -webkit-app-region:no-drag;
+}
+.md-preview h1,.md-preview h2,.md-preview h3,.md-preview h4,.md-preview h5,.md-preview h6{
+  margin:12px 0 8px 0;
+  font-weight:600;
+  line-height:1.4;
+  color:var(--text-title);
+}
+.md-preview h1{font-size:20px;border-bottom:1px solid var(--border);padding-bottom:6px;}
+.md-preview h2{font-size:17px;border-bottom:1px solid var(--border);padding-bottom:4px;}
+.md-preview h3{font-size:15px;}
+.md-preview h4{font-size:14px;}
+.md-preview h5{font-size:13px;}
+.md-preview h6{font-size:12px;}
+.md-preview p{margin:8px 0;}
+.md-preview ul,.md-preview ol{margin:8px 0;padding-left:24px;}
+.md-preview li{margin:4px 0;}
+.md-preview blockquote{
+  margin:8px 0;
+  padding:8px 12px;
+  border-left:3px solid var(--tab-underline);
+  background:rgba(128,128,128,0.08);
+  color:var(--text-editor);
+  opacity:0.9;
+}
+.md-preview code{
+  background:rgba(128,128,128,0.15);
+  padding:2px 6px;
+  border-radius:4px;
+  font-size:12px;
+  font-family:Consolas,Monaco,monospace;
+}
+.md-preview pre{
+  background:rgba(128,128,128,0.12);
+  padding:10px 12px;
+  border-radius:6px;
+  overflow-x:auto;
+  margin:8px 0;
+}
+.md-preview pre code{
+  background:transparent;
+  padding:0;
+}
+.md-preview a{
+  color:var(--tab-underline);
+  text-decoration:none;
+}
+.md-preview a:hover{text-decoration:underline;}
+.md-preview img{
+  max-width:100%;
+  border-radius:6px;
+  margin:6px 0;
+  display:block;
+}
+.md-preview table{
+  border-collapse:collapse;
+  width:100%;
+  margin:8px 0;
+}
+.md-preview th,.md-preview td{
+  border:1px solid var(--border);
+  padding:6px 10px;
+  text-align:left;
+}
+.md-preview th{
+  background:rgba(128,128,128,0.1);
+  font-weight:600;
+}
+.md-preview hr{
+  border:none;
+  border-top:1px solid var(--border);
+  margin:12px 0;
+}
+.md-preview::-webkit-scrollbar{width:6px;}
+.md-preview::-webkit-scrollbar-thumb{
+  background:var(--scroll);
+  border-radius:3px;
+}
+.md-preview::-webkit-scrollbar-thumb:hover{
+  background:var(--scroll-hover);
+}
+</style>
+<script>
+
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self).marked={})}(this,(function(e){"use strict";function t(){return{async:!1,breaks:!1,extensions:null,gfm:!0,hooks:null,pedantic:!1,renderer:null,silent:!1,tokenizer:null,walkTokens:null}}function n(t){e.defaults=t}e.defaults={async:!1,breaks:!1,extensions:null,gfm:!0,hooks:null,pedantic:!1,renderer:null,silent:!1,tokenizer:null,walkTokens:null};const s=/[&<>"']/,r=new RegExp(s.source,"g"),i=/[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/,l=new RegExp(i.source,"g"),o={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"},a=e=>o[e];function c(e,t){if(t){if(s.test(e))return e.replace(r,a)}else if(i.test(e))return e.replace(l,a);return e}const h=/&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/gi;function p(e){return e.replace(h,((e,t)=>"colon"===(t=t.toLowerCase())?":":"#"===t.charAt(0)?"x"===t.charAt(1)?String.fromCharCode(parseInt(t.substring(2),16)):String.fromCharCode(+t.substring(1)):""))}const u=/(^|[^\[])\^/g;function k(e,t){let n="string"==typeof e?e:e.source;t=t||"";const s={replace:(e,t)=>{let r="string"==typeof t?t:t.source;return r=r.replace(u,"$1"),n=n.replace(e,r),s},getRegex:()=>new RegExp(n,t)};return s}function g(e){try{e=encodeURI(e).replace(/%25/g,"%")}catch(e){return null}return e}const f={exec:()=>null};function d(e,t){const n=e.replace(/\|/g,((e,t,n)=>{let s=!1,r=t;for(;--r>=0&&"\\"===n[r];)s=!s;return s?"|":" |"})).split(/ \|/);let s=0;if(n[0].trim()||n.shift(),n.length>0&&!n[n.length-1].trim()&&n.pop(),t)if(n.length>t)n.splice(t);else for(;n.length<t;)n.push("");for(;s<n.length;s++)n[s]=n[s].trim().replace(/\\\|/g,"|");return n}function x(e,t,n){const s=e.length;if(0===s)return"";let r=0;for(;r<s;){const i=e.charAt(s-r-1);if(i!==t||n){if(i===t||!n)break;r++}else r++}return e.slice(0,s-r)}function b(e,t,n,s){const r=t.href,i=t.title?c(t.title):null,l=e[1].replace(/\\([\[\]])/g,"$1");if("!"!==e[0].charAt(0)){s.state.inLink=!0;const e={type:"link",raw:n,href:r,title:i,text:l,tokens:s.inlineTokens(l)};return s.state.inLink=!1,e}return{type:"image",raw:n,href:r,title:i,text:c(l)}}class w{options;rules;lexer;constructor(t){this.options=t||e.defaults}space(e){const t=this.rules.block.newline.exec(e);if(t&&t[0].length>0)return{type:"space",raw:t[0]}}code(e){const t=this.rules.block.code.exec(e);if(t){const e=t[0].replace(/^ {1,4}/gm,"");return{type:"code",raw:t[0],codeBlockStyle:"indented",text:this.options.pedantic?e:x(e,"\n")}}}fences(e){const t=this.rules.block.fences.exec(e);if(t){const e=t[0],n=function(e,t){const n=e.match(/^(\s+)(?:```)/);if(null===n)return t;const s=n[1];return t.split("\n").map((e=>{const t=e.match(/^\s+/);if(null===t)return e;const[n]=t;return n.length>=s.length?e.slice(s.length):e})).join("\n")}(e,t[3]||"");return{type:"code",raw:e,lang:t[2]?t[2].trim().replace(this.rules.inline.anyPunctuation,"$1"):t[2],text:n}}}heading(e){const t=this.rules.block.heading.exec(e);if(t){let e=t[2].trim();if(/#$/.test(e)){const t=x(e,"#");this.options.pedantic?e=t.trim():t&&!/ $/.test(t)||(e=t.trim())}return{type:"heading",raw:t[0],depth:t[1].length,text:e,tokens:this.lexer.inline(e)}}}hr(e){const t=this.rules.block.hr.exec(e);if(t)return{type:"hr",raw:t[0]}}blockquote(e){const t=this.rules.block.blockquote.exec(e);if(t){const e=x(t[0].replace(/^ *>[ \t]?/gm,""),"\n"),n=this.lexer.state.top;this.lexer.state.top=!0;const s=this.lexer.blockTokens(e);return this.lexer.state.top=n,{type:"blockquote",raw:t[0],tokens:s,text:e}}}list(e){let t=this.rules.block.list.exec(e);if(t){let n=t[1].trim();const s=n.length>1,r={type:"list",raw:"",ordered:s,start:s?+n.slice(0,-1):"",loose:!1,items:[]};n=s?`\\d{1,9}\\${n.slice(-1)}`:`\\${n}`,this.options.pedantic&&(n=s?n:"[*+-]");const i=new RegExp(`^( {0,3}${n})((?:[\t ][^\\n]*)?(?:\\n|$))`);let l="",o="",a=!1;for(;e;){let n=!1;if(!(t=i.exec(e)))break;if(this.rules.block.hr.test(e))break;l=t[0],e=e.substring(l.length);let s=t[2].split("\n",1)[0].replace(/^\t+/,(e=>" ".repeat(3*e.length))),c=e.split("\n",1)[0],h=0;this.options.pedantic?(h=2,o=s.trimStart()):(h=t[2].search(/[^ ]/),h=h>4?1:h,o=s.slice(h),h+=t[1].length);let p=!1;if(!s&&/^ *$/.test(c)&&(l+=c+"\n",e=e.substring(c.length+1),n=!0),!n){const t=new RegExp(`^ {0,${Math.min(3,h-1)}}(?:[*+-]|\\d{1,9}[.)])((?:[ \t][^\\n]*)?(?:\\n|$))`),n=new RegExp(`^ {0,${Math.min(3,h-1)}}((?:- *){3,}|(?:_ *){3,}|(?:\\* *){3,})(?:\\n+|$)`),r=new RegExp(`^ {0,${Math.min(3,h-1)}}(?:\`\`\`|~~~)`),i=new RegExp(`^ {0,${Math.min(3,h-1)}}#`);for(;e;){const a=e.split("\n",1)[0];if(c=a,this.options.pedantic&&(c=c.replace(/^ {1,4}(?=( {4})*[^ ])/g,"  ")),r.test(c))break;if(i.test(c))break;if(t.test(c))break;if(n.test(e))break;if(c.search(/[^ ]/)>=h||!c.trim())o+="\n"+c.slice(h);else{if(p)break;if(s.search(/[^ ]/)>=4)break;if(r.test(s))break;if(i.test(s))break;if(n.test(s))break;o+="\n"+c}p||c.trim()||(p=!0),l+=a+"\n",e=e.substring(a.length+1),s=c.slice(h)}}r.loose||(a?r.loose=!0:/\n *\n *$/.test(l)&&(a=!0));let u,k=null;this.options.gfm&&(k=/^\[[ xX]\] /.exec(o),k&&(u="[ ] "!==k[0],o=o.replace(/^\[[ xX]\] +/,""))),r.items.push({type:"list_item",raw:l,task:!!k,checked:u,loose:!1,text:o,tokens:[]}),r.raw+=l}r.items[r.items.length-1].raw=l.trimEnd(),r.items[r.items.length-1].text=o.trimEnd(),r.raw=r.raw.trimEnd();for(let e=0;e<r.items.length;e++)if(this.lexer.state.top=!1,r.items[e].tokens=this.lexer.blockTokens(r.items[e].text,[]),!r.loose){const t=r.items[e].tokens.filter((e=>"space"===e.type)),n=t.length>0&&t.some((e=>/\n.*\n/.test(e.raw)));r.loose=n}if(r.loose)for(let e=0;e<r.items.length;e++)r.items[e].loose=!0;return r}}html(e){const t=this.rules.block.html.exec(e);if(t){return{type:"html",block:!0,raw:t[0],pre:"pre"===t[1]||"script"===t[1]||"style"===t[1],text:t[0]}}}def(e){const t=this.rules.block.def.exec(e);if(t){const e=t[1].toLowerCase().replace(/\s+/g," "),n=t[2]?t[2].replace(/^<(.*)>$/,"$1").replace(this.rules.inline.anyPunctuation,"$1"):"",s=t[3]?t[3].substring(1,t[3].length-1).replace(this.rules.inline.anyPunctuation,"$1"):t[3];return{type:"def",tag:e,raw:t[0],href:n,title:s}}}table(e){const t=this.rules.block.table.exec(e);if(!t)return;if(!/[:|]/.test(t[2]))return;const n=d(t[1]),s=t[2].replace(/^\||\| *$/g,"").split("|"),r=t[3]&&t[3].trim()?t[3].replace(/\n[ \t]*$/,"").split("\n"):[],i={type:"table",raw:t[0],header:[],align:[],rows:[]};if(n.length===s.length){for(const e of s)/^ *-+: *$/.test(e)?i.align.push("right"):/^ *:-+: *$/.test(e)?i.align.push("center"):/^ *:-+ *$/.test(e)?i.align.push("left"):i.align.push(null);for(const e of n)i.header.push({text:e,tokens:this.lexer.inline(e)});for(const e of r)i.rows.push(d(e,i.header.length).map((e=>({text:e,tokens:this.lexer.inline(e)}))));return i}}lheading(e){const t=this.rules.block.lheading.exec(e);if(t)return{type:"heading",raw:t[0],depth:"="===t[2].charAt(0)?1:2,text:t[1],tokens:this.lexer.inline(t[1])}}paragraph(e){const t=this.rules.block.paragraph.exec(e);if(t){const e="\n"===t[1].charAt(t[1].length-1)?t[1].slice(0,-1):t[1];return{type:"paragraph",raw:t[0],text:e,tokens:this.lexer.inline(e)}}}text(e){const t=this.rules.block.text.exec(e);if(t)return{type:"text",raw:t[0],text:t[0],tokens:this.lexer.inline(t[0])}}escape(e){const t=this.rules.inline.escape.exec(e);if(t)return{type:"escape",raw:t[0],text:c(t[1])}}tag(e){const t=this.rules.inline.tag.exec(e);if(t)return!this.lexer.state.inLink&&/^<a /i.test(t[0])?this.lexer.state.inLink=!0:this.lexer.state.inLink&&/^<\/a>/i.test(t[0])&&(this.lexer.state.inLink=!1),!this.lexer.state.inRawBlock&&/^<(pre|code|kbd|script)(\s|>)/i.test(t[0])?this.lexer.state.inRawBlock=!0:this.lexer.state.inRawBlock&&/^<\/(pre|code|kbd|script)(\s|>)/i.test(t[0])&&(this.lexer.state.inRawBlock=!1),{type:"html",raw:t[0],inLink:this.lexer.state.inLink,inRawBlock:this.lexer.state.inRawBlock,block:!1,text:t[0]}}link(e){const t=this.rules.inline.link.exec(e);if(t){const e=t[2].trim();if(!this.options.pedantic&&/^</.test(e)){if(!/>$/.test(e))return;const t=x(e.slice(0,-1),"\\");if((e.length-t.length)%2==0)return}else{const e=function(e,t){if(-1===e.indexOf(t[1]))return-1;let n=0;for(let s=0;s<e.length;s++)if("\\"===e[s])s++;else if(e[s]===t[0])n++;else if(e[s]===t[1]&&(n--,n<0))return s;return-1}(t[2],"()");if(e>-1){const n=(0===t[0].indexOf("!")?5:4)+t[1].length+e;t[2]=t[2].substring(0,e),t[0]=t[0].substring(0,n).trim(),t[3]=""}}let n=t[2],s="";if(this.options.pedantic){const e=/^([^'"]*[^\s])\s+(['"])(.*)\2/.exec(n);e&&(n=e[1],s=e[3])}else s=t[3]?t[3].slice(1,-1):"";return n=n.trim(),/^</.test(n)&&(n=this.options.pedantic&&!/>$/.test(e)?n.slice(1):n.slice(1,-1)),b(t,{href:n?n.replace(this.rules.inline.anyPunctuation,"$1"):n,title:s?s.replace(this.rules.inline.anyPunctuation,"$1"):s},t[0],this.lexer)}}reflink(e,t){let n;if((n=this.rules.inline.reflink.exec(e))||(n=this.rules.inline.nolink.exec(e))){const e=t[(n[2]||n[1]).replace(/\s+/g," ").toLowerCase()];if(!e){const e=n[0].charAt(0);return{type:"text",raw:e,text:e}}return b(n,e,n[0],this.lexer)}}emStrong(e,t,n=""){let s=this.rules.inline.emStrongLDelim.exec(e);if(!s)return;if(s[3]&&n.match(/[\p{L}\p{N}]/u))return;if(!(s[1]||s[2]||"")||!n||this.rules.inline.punctuation.exec(n)){const n=[...s[0]].length-1;let r,i,l=n,o=0;const a="*"===s[0][0]?this.rules.inline.emStrongRDelimAst:this.rules.inline.emStrongRDelimUnd;for(a.lastIndex=0,t=t.slice(-1*e.length+n);null!=(s=a.exec(t));){if(r=s[1]||s[2]||s[3]||s[4]||s[5]||s[6],!r)continue;if(i=[...r].length,s[3]||s[4]){l+=i;continue}if((s[5]||s[6])&&n%3&&!((n+i)%3)){o+=i;continue}if(l-=i,l>0)continue;i=Math.min(i,i+l+o);const t=[...s[0]][0].length,a=e.slice(0,n+s.index+t+i);if(Math.min(n,i)%2){const e=a.slice(1,-1);return{type:"em",raw:a,text:e,tokens:this.lexer.inlineTokens(e)}}const c=a.slice(2,-2);return{type:"strong",raw:a,text:c,tokens:this.lexer.inlineTokens(c)}}}}codespan(e){const t=this.rules.inline.code.exec(e);if(t){let e=t[2].replace(/\n/g," ");const n=/[^ ]/.test(e),s=/^ /.test(e)&&/ $/.test(e);return n&&s&&(e=e.substring(1,e.length-1)),e=c(e,!0),{type:"codespan",raw:t[0],text:e}}}br(e){const t=this.rules.inline.br.exec(e);if(t)return{type:"br",raw:t[0]}}del(e){const t=this.rules.inline.del.exec(e);if(t)return{type:"del",raw:t[0],text:t[2],tokens:this.lexer.inlineTokens(t[2])}}autolink(e){const t=this.rules.inline.autolink.exec(e);if(t){let e,n;return"@"===t[2]?(e=c(t[1]),n="mailto:"+e):(e=c(t[1]),n=e),{type:"link",raw:t[0],text:e,href:n,tokens:[{type:"text",raw:e,text:e}]}}}url(e){let t;if(t=this.rules.inline.url.exec(e)){let e,n;if("@"===t[2])e=c(t[0]),n="mailto:"+e;else{let s;do{s=t[0],t[0]=this.rules.inline._backpedal.exec(t[0])?.[0]??""}while(s!==t[0]);e=c(t[0]),n="www."===t[1]?"http://"+t[0]:t[0]}return{type:"link",raw:t[0],text:e,href:n,tokens:[{type:"text",raw:e,text:e}]}}}inlineText(e){const t=this.rules.inline.text.exec(e);if(t){let e;return e=this.lexer.state.inRawBlock?t[0]:c(t[0]),{type:"text",raw:t[0],text:e}}}}const m=/^ {0,3}((?:-[\t ]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})(?:\n+|$)/,y=/(?:[*+-]|\d{1,9}[.)])/,$=k(/^(?!bull )((?:.|\n(?!\s*?\n|bull ))+?)\n {0,3}(=+|-+) *(?:\n+|$)/).replace(/bull/g,y).getRegex(),z=/^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html|table| +\n)[^\n]+)*)/,T=/(?!\s*\])(?:\\.|[^\[\]\\])+/,R=k(/^ {0,3}\[(label)\]: *(?:\n *)?([^<\s][^\s]*|<.*?>)(?:(?: +(?:\n *)?| *\n *)(title))? *(?:\n+|$)/).replace("label",T).replace("title",/(?:"(?:\\"?|[^"\\])*"|'[^'\n]*(?:\n[^'\n]+)*\n?'|\([^()]*\))/).getRegex(),_=k(/^( {0,3}bull)([ \t][^\n]+?)?(?:\n|$)/).replace(/bull/g,y).getRegex(),A="address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul",S=/<!--(?:-?>|[\s\S]*?(?:-->|$))/,I=k("^ {0,3}(?:<(script|pre|style|textarea)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)|comment[^\\n]*(\\n+|$)|<\\?[\\s\\S]*?(?:\\?>\\n*|$)|<![A-Z][\\s\\S]*?(?:>\\n*|$)|<!\\[CDATA\\[[\\s\\S]*?(?:\\]\\]>\\n*|$)|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n *)+\\n|$)|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$)|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$))","i").replace("comment",S).replace("tag",A).replace("attribute",/ +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/).getRegex(),E=k(z).replace("hr",m).replace("heading"," {0,3}#{1,6}(?:\\s|$)").replace("|lheading","").replace("|table","").replace("blockquote"," {0,3}>").replace("fences"," {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list"," {0,3}(?:[*+-]|1[.)]) ").replace("html","</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag",A).getRegex(),Z={blockquote:k(/^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/).replace("paragraph",E).getRegex(),code:/^( {4}[^\n]+(?:\n(?: *(?:\n|$))*)?)+/,def:R,fences:/^ {0,3}(`{3,}(?=[^`\n]*(?:\n|$))|~{3,})([^\n]*)(?:\n|$)(?:|([\s\S]*?)(?:\n|$))(?: {0,3}\1[~`]* *(?=\n|$)|$)/,heading:/^ {0,3}(#{1,6})(?=\s|$)(.*)(?:\n+|$)/,hr:m,html:I,lheading:$,list:_,newline:/^(?: *(?:\n|$))+/,paragraph:E,table:f,text:/^[^\n]+/},q=k("^ *([^\\n ].*)\\n {0,3}((?:\\| *)?:?-+:? *(?:\\| *:?-+:? *)*(?:\\| *)?)(?:\\n((?:(?! *\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)").replace("hr",m).replace("heading"," {0,3}#{1,6}(?:\\s|$)").replace("blockquote"," {0,3}>").replace("code"," {4}[^\\n]").replace("fences"," {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list"," {0,3}(?:[*+-]|1[.)]) ").replace("html","</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag",A).getRegex(),L={...Z,table:q,paragraph:k(z).replace("hr",m).replace("heading"," {0,3}#{1,6}(?:\\s|$)").replace("|lheading","").replace("table",q).replace("blockquote"," {0,3}>").replace("fences"," {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list"," {0,3}(?:[*+-]|1[.)]) ").replace("html","</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag",A).getRegex()},P={...Z,html:k("^ *(?:comment *(?:\\n|\\s*$)|<(tag)[\\s\\S]+?</\\1> *(?:\\n{2,}|\\s*$)|<tag(?:\"[^\"]*\"|'[^']*'|\\s[^'\"/>\\s]*)*?/?> *(?:\\n{2,}|\\s*$))").replace("comment",S).replace(/tag/g,"(?!(?:a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|span|br|wbr|ins|del|img)\\b)\\w+(?!:|[^\\w\\s@]*@)\\b").getRegex(),def:/^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +(["(][^\n]+[")]))? *(?:\n+|$)/,heading:/^(#{1,6})(.*)(?:\n+|$)/,fences:f,lheading:/^(.+?)\n {0,3}(=+|-+) *(?:\n+|$)/,paragraph:k(z).replace("hr",m).replace("heading"," *#{1,6} *[^\n]").replace("lheading",$).replace("|table","").replace("blockquote"," {0,3}>").replace("|fences","").replace("|list","").replace("|html","").replace("|tag","").getRegex()},Q=/^\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/,v=/^( {2,}|\\)\n(?!\s*$)/,B="\\p{P}\\p{S}",M=k(/^((?![*_])[\spunctuation])/,"u").replace(/punctuation/g,B).getRegex(),O=k(/^(?:\*+(?:((?!\*)[punct])|[^\s*]))|^_+(?:((?!_)[punct])|([^\s_]))/,"u").replace(/punct/g,B).getRegex(),C=k("^[^_*]*?__[^_*]*?\\*[^_*]*?(?=__)|[^*]+(?=[^*])|(?!\\*)[punct](\\*+)(?=[\\s]|$)|[^punct\\s](\\*+)(?!\\*)(?=[punct\\s]|$)|(?!\\*)[punct\\s](\\*+)(?=[^punct\\s])|[\\s](\\*+)(?!\\*)(?=[punct])|(?!\\*)[punct](\\*+)(?!\\*)(?=[punct])|[^punct\\s](\\*+)(?=[^punct\\s])","gu").replace(/punct/g,B).getRegex(),D=k("^[^_*]*?\\*\\*[^_*]*?_[^_*]*?(?=\\*\\*)|[^_]+(?=[^_])|(?!_)[punct](_+)(?=[\\s]|$)|[^punct\\s](_+)(?!_)(?=[punct\\s]|$)|(?!_)[punct\\s](_+)(?=[^punct\\s])|[\\s](_+)(?!_)(?=[punct])|(?!_)[punct](_+)(?!_)(?=[punct])","gu").replace(/punct/g,B).getRegex(),j=k(/\\([punct])/,"gu").replace(/punct/g,B).getRegex(),H=k(/^<(scheme:[^\s\x00-\x1f<>]*|email)>/).replace("scheme",/[a-zA-Z][a-zA-Z0-9+.-]{1,31}/).replace("email",/[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(@)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?![-_])/).getRegex(),U=k(S).replace("(?:--\x3e|$)","--\x3e").getRegex(),X=k("^comment|^</[a-zA-Z][\\w:-]*\\s*>|^<[a-zA-Z][\\w-]*(?:attribute)*?\\s*/?>|^<\\?[\\s\\S]*?\\?>|^<![a-zA-Z]+\\s[\\s\\S]*?>|^<!\\[CDATA\\[[\\s\\S]*?\\]\\]>").replace("comment",U).replace("attribute",/\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?/).getRegex(),F=/(?:\[(?:\\.|[^\[\]\\])*\]|\\.|`[^`]*`|[^\[\]\\`])*?/,N=k(/^!?\[(label)\]\(\s*(href)(?:\s+(title))?\s*\)/).replace("label",F).replace("href",/<(?:\\.|[^\n<>\\])+>|[^\s\x00-\x1f]*/).replace("title",/"(?:\\"?|[^"\\])*"|'(?:\\'?|[^'\\])*'|\((?:\\\)?|[^)\\])*\)/).getRegex(),G=k(/^!?\[(label)\]\[(ref)\]/).replace("label",F).replace("ref",T).getRegex(),J=k(/^!?\[(ref)\](?:\[\])?/).replace("ref",T).getRegex(),K={_backpedal:f,anyPunctuation:j,autolink:H,blockSkip:/\[[^[\]]*?\]\([^\(\)]*?\)|`[^`]*?`|<[^<>]*?>/g,br:v,code:/^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/,del:f,emStrongLDelim:O,emStrongRDelimAst:C,emStrongRDelimUnd:D,escape:Q,link:N,nolink:J,punctuation:M,reflink:G,reflinkSearch:k("reflink|nolink(?!\\()","g").replace("reflink",G).replace("nolink",J).getRegex(),tag:X,text:/^(`+|[^`])(?:(?= {2,}\n)|[\s\S]*?(?:(?=[\\<!\[`*_]|\b_|$)|[^ ](?= {2,}\n)))/,url:f},V={...K,link:k(/^!?\[(label)\]\((.*?)\)/).replace("label",F).getRegex(),reflink:k(/^!?\[(label)\]\s*\[([^\]]*)\]/).replace("label",F).getRegex()},W={...K,escape:k(Q).replace("])","~|])").getRegex(),url:k(/^((?:ftp|https?):\/\/|www\.)(?:[a-zA-Z0-9\-]+\.?)+[^\s<]*|^email/,"i").replace("email",/[A-Za-z0-9._+-]+(@)[a-zA-Z0-9-_]+(?:\.[a-zA-Z0-9-_]*[a-zA-Z0-9])+(?![-_])/).getRegex(),_backpedal:/(?:[^?!.,:;*_'"~()&]+|\([^)]*\)|&(?![a-zA-Z0-9]+;$)|[?!.,:;*_'"~)]+(?!$))+/,del:/^(~~?)(?=[^\s~])([\s\S]*?[^\s~])\1(?=[^~]|$)/,text:/^([`~]+|[^`~])(?:(?= {2,}\n)|(?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)|[\s\S]*?(?:(?=[\\<!\[`*~_]|\b_|https?:\/\/|ftp:\/\/|www\.|$)|[^ ](?= {2,}\n)|[^a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-](?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)))/},Y={...W,br:k(v).replace("{2,}","*").getRegex(),text:k(W.text).replace("\\b_","\\b_| {2,}\\n").replace(/\{2,\}/g,"*").getRegex()},ee={normal:Z,gfm:L,pedantic:P},te={normal:K,gfm:W,breaks:Y,pedantic:V};class ne{tokens;options;state;tokenizer;inlineQueue;constructor(t){this.tokens=[],this.tokens.links=Object.create(null),this.options=t||e.defaults,this.options.tokenizer=this.options.tokenizer||new w,this.tokenizer=this.options.tokenizer,this.tokenizer.options=this.options,this.tokenizer.lexer=this,this.inlineQueue=[],this.state={inLink:!1,inRawBlock:!1,top:!0};const n={block:ee.normal,inline:te.normal};this.options.pedantic?(n.block=ee.pedantic,n.inline=te.pedantic):this.options.gfm&&(n.block=ee.gfm,this.options.breaks?n.inline=te.breaks:n.inline=te.gfm),this.tokenizer.rules=n}static get rules(){return{block:ee,inline:te}}static lex(e,t){return new ne(t).lex(e)}static lexInline(e,t){return new ne(t).inlineTokens(e)}lex(e){e=e.replace(/\r\n|\r/g,"\n"),this.blockTokens(e,this.tokens);for(let e=0;e<this.inlineQueue.length;e++){const t=this.inlineQueue[e];this.inlineTokens(t.src,t.tokens)}return this.inlineQueue=[],this.tokens}blockTokens(e,t=[]){let n,s,r,i;for(e=this.options.pedantic?e.replace(/\t/g,"    ").replace(/^ +$/gm,""):e.replace(/^( *)(\t+)/gm,((e,t,n)=>t+"    ".repeat(n.length)));e;)if(!(this.options.extensions&&this.options.extensions.block&&this.options.extensions.block.some((s=>!!(n=s.call({lexer:this},e,t))&&(e=e.substring(n.raw.length),t.push(n),!0)))))if(n=this.tokenizer.space(e))e=e.substring(n.raw.length),1===n.raw.length&&t.length>0?t[t.length-1].raw+="\n":t.push(n);else if(n=this.tokenizer.code(e))e=e.substring(n.raw.length),s=t[t.length-1],!s||"paragraph"!==s.type&&"text"!==s.type?t.push(n):(s.raw+="\n"+n.raw,s.text+="\n"+n.text,this.inlineQueue[this.inlineQueue.length-1].src=s.text);else if(n=this.tokenizer.fences(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.heading(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.hr(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.blockquote(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.list(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.html(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.def(e))e=e.substring(n.raw.length),s=t[t.length-1],!s||"paragraph"!==s.type&&"text"!==s.type?this.tokens.links[n.tag]||(this.tokens.links[n.tag]={href:n.href,title:n.title}):(s.raw+="\n"+n.raw,s.text+="\n"+n.raw,this.inlineQueue[this.inlineQueue.length-1].src=s.text);else if(n=this.tokenizer.table(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.lheading(e))e=e.substring(n.raw.length),t.push(n);else{if(r=e,this.options.extensions&&this.options.extensions.startBlock){let t=1/0;const n=e.slice(1);let s;this.options.extensions.startBlock.forEach((e=>{s=e.call({lexer:this},n),"number"==typeof s&&s>=0&&(t=Math.min(t,s))})),t<1/0&&t>=0&&(r=e.substring(0,t+1))}if(this.state.top&&(n=this.tokenizer.paragraph(r)))s=t[t.length-1],i&&"paragraph"===s.type?(s.raw+="\n"+n.raw,s.text+="\n"+n.text,this.inlineQueue.pop(),this.inlineQueue[this.inlineQueue.length-1].src=s.text):t.push(n),i=r.length!==e.length,e=e.substring(n.raw.length);else if(n=this.tokenizer.text(e))e=e.substring(n.raw.length),s=t[t.length-1],s&&"text"===s.type?(s.raw+="\n"+n.raw,s.text+="\n"+n.text,this.inlineQueue.pop(),this.inlineQueue[this.inlineQueue.length-1].src=s.text):t.push(n);else if(e){const t="Infinite loop on byte: "+e.charCodeAt(0);if(this.options.silent){console.error(t);break}throw new Error(t)}}return this.state.top=!0,t}inline(e,t=[]){return this.inlineQueue.push({src:e,tokens:t}),t}inlineTokens(e,t=[]){let n,s,r,i,l,o,a=e;if(this.tokens.links){const e=Object.keys(this.tokens.links);if(e.length>0)for(;null!=(i=this.tokenizer.rules.inline.reflinkSearch.exec(a));)e.includes(i[0].slice(i[0].lastIndexOf("[")+1,-1))&&(a=a.slice(0,i.index)+"["+"a".repeat(i[0].length-2)+"]"+a.slice(this.tokenizer.rules.inline.reflinkSearch.lastIndex))}for(;null!=(i=this.tokenizer.rules.inline.blockSkip.exec(a));)a=a.slice(0,i.index)+"["+"a".repeat(i[0].length-2)+"]"+a.slice(this.tokenizer.rules.inline.blockSkip.lastIndex);for(;null!=(i=this.tokenizer.rules.inline.anyPunctuation.exec(a));)a=a.slice(0,i.index)+"++"+a.slice(this.tokenizer.rules.inline.anyPunctuation.lastIndex);for(;e;)if(l||(o=""),l=!1,!(this.options.extensions&&this.options.extensions.inline&&this.options.extensions.inline.some((s=>!!(n=s.call({lexer:this},e,t))&&(e=e.substring(n.raw.length),t.push(n),!0)))))if(n=this.tokenizer.escape(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.tag(e))e=e.substring(n.raw.length),s=t[t.length-1],s&&"text"===n.type&&"text"===s.type?(s.raw+=n.raw,s.text+=n.text):t.push(n);else if(n=this.tokenizer.link(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.reflink(e,this.tokens.links))e=e.substring(n.raw.length),s=t[t.length-1],s&&"text"===n.type&&"text"===s.type?(s.raw+=n.raw,s.text+=n.text):t.push(n);else if(n=this.tokenizer.emStrong(e,a,o))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.codespan(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.br(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.del(e))e=e.substring(n.raw.length),t.push(n);else if(n=this.tokenizer.autolink(e))e=e.substring(n.raw.length),t.push(n);else if(this.state.inLink||!(n=this.tokenizer.url(e))){if(r=e,this.options.extensions&&this.options.extensions.startInline){let t=1/0;const n=e.slice(1);let s;this.options.extensions.startInline.forEach((e=>{s=e.call({lexer:this},n),"number"==typeof s&&s>=0&&(t=Math.min(t,s))})),t<1/0&&t>=0&&(r=e.substring(0,t+1))}if(n=this.tokenizer.inlineText(r))e=e.substring(n.raw.length),"_"!==n.raw.slice(-1)&&(o=n.raw.slice(-1)),l=!0,s=t[t.length-1],s&&"text"===s.type?(s.raw+=n.raw,s.text+=n.text):t.push(n);else if(e){const t="Infinite loop on byte: "+e.charCodeAt(0);if(this.options.silent){console.error(t);break}throw new Error(t)}}else e=e.substring(n.raw.length),t.push(n);return t}}class se{options;constructor(t){this.options=t||e.defaults}code(e,t,n){const s=(t||"").match(/^\S*/)?.[0];return e=e.replace(/\n$/,"")+"\n",s?'<pre><code class="language-'+c(s)+'">'+(n?e:c(e,!0))+"</code></pre>\n":"<pre><code>"+(n?e:c(e,!0))+"</code></pre>\n"}blockquote(e){return`<blockquote>\n${e}</blockquote>\n`}html(e,t){return e}heading(e,t,n){return`<h${t}>${e}</h${t}>\n`}hr(){return"<hr>\n"}list(e,t,n){const s=t?"ol":"ul";return"<"+s+(t&&1!==n?' start="'+n+'"':"")+">\n"+e+"</"+s+">\n"}listitem(e,t,n){return`<li>${e}</li>\n`}checkbox(e){return"<input "+(e?'checked="" ':"")+'disabled="" type="checkbox">'}paragraph(e){return`<p>${e}</p>\n`}table(e,t){return t&&(t=`<tbody>${t}</tbody>`),"<table>\n<thead>\n"+e+"</thead>\n"+t+"</table>\n"}tablerow(e){return`<tr>\n${e}</tr>\n`}tablecell(e,t){const n=t.header?"th":"td";return(t.align?`<${n} align="${t.align}">`:`<${n}>`)+e+`</${n}>\n`}strong(e){return`<strong>${e}</strong>`}em(e){return`<em>${e}</em>`}codespan(e){return`<code>${e}</code>`}br(){return"<br>"}del(e){return`<del>${e}</del>`}link(e,t,n){const s=g(e);if(null===s)return n;let r='<a href="'+(e=s)+'"';return t&&(r+=' title="'+t+'"'),r+=">"+n+"</a>",r}image(e,t,n){const s=g(e);if(null===s)return n;let r=`<img src="${e=s}" alt="${n}"`;return t&&(r+=` title="${t}"`),r+=">",r}text(e){return e}}class re{strong(e){return e}em(e){return e}codespan(e){return e}del(e){return e}html(e){return e}text(e){return e}link(e,t,n){return""+n}image(e,t,n){return""+n}br(){return""}}class ie{options;renderer;textRenderer;constructor(t){this.options=t||e.defaults,this.options.renderer=this.options.renderer||new se,this.renderer=this.options.renderer,this.renderer.options=this.options,this.textRenderer=new re}static parse(e,t){return new ie(t).parse(e)}static parseInline(e,t){return new ie(t).parseInline(e)}parse(e,t=!0){let n="";for(let s=0;s<e.length;s++){const r=e[s];if(this.options.extensions&&this.options.extensions.renderers&&this.options.extensions.renderers[r.type]){const e=r,t=this.options.extensions.renderers[e.type].call({parser:this},e);if(!1!==t||!["space","hr","heading","code","table","blockquote","list","html","paragraph","text"].includes(e.type)){n+=t||"";continue}}switch(r.type){case"space":continue;case"hr":n+=this.renderer.hr();continue;case"heading":{const e=r;n+=this.renderer.heading(this.parseInline(e.tokens),e.depth,p(this.parseInline(e.tokens,this.textRenderer)));continue}case"code":{const e=r;n+=this.renderer.code(e.text,e.lang,!!e.escaped);continue}case"table":{const e=r;let t="",s="";for(let t=0;t<e.header.length;t++)s+=this.renderer.tablecell(this.parseInline(e.header[t].tokens),{header:!0,align:e.align[t]});t+=this.renderer.tablerow(s);let i="";for(let t=0;t<e.rows.length;t++){const n=e.rows[t];s="";for(let t=0;t<n.length;t++)s+=this.renderer.tablecell(this.parseInline(n[t].tokens),{header:!1,align:e.align[t]});i+=this.renderer.tablerow(s)}n+=this.renderer.table(t,i);continue}case"blockquote":{const e=r,t=this.parse(e.tokens);n+=this.renderer.blockquote(t);continue}case"list":{const e=r,t=e.ordered,s=e.start,i=e.loose;let l="";for(let t=0;t<e.items.length;t++){const n=e.items[t],s=n.checked,r=n.task;let o="";if(n.task){const e=this.renderer.checkbox(!!s);i?n.tokens.length>0&&"paragraph"===n.tokens[0].type?(n.tokens[0].text=e+" "+n.tokens[0].text,n.tokens[0].tokens&&n.tokens[0].tokens.length>0&&"text"===n.tokens[0].tokens[0].type&&(n.tokens[0].tokens[0].text=e+" "+n.tokens[0].tokens[0].text)):n.tokens.unshift({type:"text",text:e+" "}):o+=e+" "}o+=this.parse(n.tokens,i),l+=this.renderer.listitem(o,r,!!s)}n+=this.renderer.list(l,t,s);continue}case"html":{const e=r;n+=this.renderer.html(e.text,e.block);continue}case"paragraph":{const e=r;n+=this.renderer.paragraph(this.parseInline(e.tokens));continue}case"text":{let i=r,l=i.tokens?this.parseInline(i.tokens):i.text;for(;s+1<e.length&&"text"===e[s+1].type;)i=e[++s],l+="\n"+(i.tokens?this.parseInline(i.tokens):i.text);n+=t?this.renderer.paragraph(l):l;continue}default:{const e='Token with "'+r.type+'" type was not found.';if(this.options.silent)return console.error(e),"";throw new Error(e)}}}return n}parseInline(e,t){t=t||this.renderer;let n="";for(let s=0;s<e.length;s++){const r=e[s];if(this.options.extensions&&this.options.extensions.renderers&&this.options.extensions.renderers[r.type]){const e=this.options.extensions.renderers[r.type].call({parser:this},r);if(!1!==e||!["escape","html","link","image","strong","em","codespan","br","del","text"].includes(r.type)){n+=e||"";continue}}switch(r.type){case"escape":{const e=r;n+=t.text(e.text);break}case"html":{const e=r;n+=t.html(e.text);break}case"link":{const e=r;n+=t.link(e.href,e.title,this.parseInline(e.tokens,t));break}case"image":{const e=r;n+=t.image(e.href,e.title,e.text);break}case"strong":{const e=r;n+=t.strong(this.parseInline(e.tokens,t));break}case"em":{const e=r;n+=t.em(this.parseInline(e.tokens,t));break}case"codespan":{const e=r;n+=t.codespan(e.text);break}case"br":n+=t.br();break;case"del":{const e=r;n+=t.del(this.parseInline(e.tokens,t));break}case"text":{const e=r;n+=t.text(e.text);break}default:{const e='Token with "'+r.type+'" type was not found.';if(this.options.silent)return console.error(e),"";throw new Error(e)}}}return n}}class le{options;constructor(t){this.options=t||e.defaults}static passThroughHooks=new Set(["preprocess","postprocess","processAllTokens"]);preprocess(e){return e}postprocess(e){return e}processAllTokens(e){return e}}class oe{defaults={async:!1,breaks:!1,extensions:null,gfm:!0,hooks:null,pedantic:!1,renderer:null,silent:!1,tokenizer:null,walkTokens:null};options=this.setOptions;parse=this.#e(ne.lex,ie.parse);parseInline=this.#e(ne.lexInline,ie.parseInline);Parser=ie;Renderer=se;TextRenderer=re;Lexer=ne;Tokenizer=w;Hooks=le;constructor(...e){this.use(...e)}walkTokens(e,t){let n=[];for(const s of e)switch(n=n.concat(t.call(this,s)),s.type){case"table":{const e=s;for(const s of e.header)n=n.concat(this.walkTokens(s.tokens,t));for(const s of e.rows)for(const e of s)n=n.concat(this.walkTokens(e.tokens,t));break}case"list":{const e=s;n=n.concat(this.walkTokens(e.items,t));break}default:{const e=s;this.defaults.extensions?.childTokens?.[e.type]?this.defaults.extensions.childTokens[e.type].forEach((s=>{const r=e[s].flat(1/0);n=n.concat(this.walkTokens(r,t))})):e.tokens&&(n=n.concat(this.walkTokens(e.tokens,t)))}}return n}use(...e){const t=this.defaults.extensions||{renderers:{},childTokens:{}};return e.forEach((e=>{const n={...e};if(n.async=this.defaults.async||n.async||!1,e.extensions&&(e.extensions.forEach((e=>{if(!e.name)throw new Error("extension name required");if("renderer"in e){const n=t.renderers[e.name];t.renderers[e.name]=n?function(...t){let s=e.renderer.apply(this,t);return!1===s&&(s=n.apply(this,t)),s}:e.renderer}if("tokenizer"in e){if(!e.level||"block"!==e.level&&"inline"!==e.level)throw new Error("extension level must be 'block' or 'inline'");const n=t[e.level];n?n.unshift(e.tokenizer):t[e.level]=[e.tokenizer],e.start&&("block"===e.level?t.startBlock?t.startBlock.push(e.start):t.startBlock=[e.start]:"inline"===e.level&&(t.startInline?t.startInline.push(e.start):t.startInline=[e.start]))}"childTokens"in e&&e.childTokens&&(t.childTokens[e.name]=e.childTokens)})),n.extensions=t),e.renderer){const t=this.defaults.renderer||new se(this.defaults);for(const n in e.renderer){if(!(n in t))throw new Error(`renderer '${n}' does not exist`);if("options"===n)continue;const s=n,r=e.renderer[s],i=t[s];t[s]=(...e)=>{let n=r.apply(t,e);return!1===n&&(n=i.apply(t,e)),n||""}}n.renderer=t}if(e.tokenizer){const t=this.defaults.tokenizer||new w(this.defaults);for(const n in e.tokenizer){if(!(n in t))throw new Error(`tokenizer '${n}' does not exist`);if(["options","rules","lexer"].includes(n))continue;const s=n,r=e.tokenizer[s],i=t[s];t[s]=(...e)=>{let n=r.apply(t,e);return!1===n&&(n=i.apply(t,e)),n}}n.tokenizer=t}if(e.hooks){const t=this.defaults.hooks||new le;for(const n in e.hooks){if(!(n in t))throw new Error(`hook '${n}' does not exist`);if("options"===n)continue;const s=n,r=e.hooks[s],i=t[s];le.passThroughHooks.has(n)?t[s]=e=>{if(this.defaults.async)return Promise.resolve(r.call(t,e)).then((e=>i.call(t,e)));const n=r.call(t,e);return i.call(t,n)}:t[s]=(...e)=>{let n=r.apply(t,e);return!1===n&&(n=i.apply(t,e)),n}}n.hooks=t}if(e.walkTokens){const t=this.defaults.walkTokens,s=e.walkTokens;n.walkTokens=function(e){let n=[];return n.push(s.call(this,e)),t&&(n=n.concat(t.call(this,e))),n}}this.defaults={...this.defaults,...n}})),this}setOptions(e){return this.defaults={...this.defaults,...e},this}lexer(e,t){return ne.lex(e,t??this.defaults)}parser(e,t){return ie.parse(e,t??this.defaults)}#e(e,t){return(n,s)=>{const r={...s},i={...this.defaults,...r};!0===this.defaults.async&&!1===r.async&&(i.silent||console.warn("marked(): The async option was set to true by an extension. The async: false option sent to parse will be ignored."),i.async=!0);const l=this.#t(!!i.silent,!!i.async);if(null==n)return l(new Error("marked(): input parameter is undefined or null"));if("string"!=typeof n)return l(new Error("marked(): input parameter is of type "+Object.prototype.toString.call(n)+", string expected"));if(i.hooks&&(i.hooks.options=i),i.async)return Promise.resolve(i.hooks?i.hooks.preprocess(n):n).then((t=>e(t,i))).then((e=>i.hooks?i.hooks.processAllTokens(e):e)).then((e=>i.walkTokens?Promise.all(this.walkTokens(e,i.walkTokens)).then((()=>e)):e)).then((e=>t(e,i))).then((e=>i.hooks?i.hooks.postprocess(e):e)).catch(l);try{i.hooks&&(n=i.hooks.preprocess(n));let s=e(n,i);i.hooks&&(s=i.hooks.processAllTokens(s)),i.walkTokens&&this.walkTokens(s,i.walkTokens);let r=t(s,i);return i.hooks&&(r=i.hooks.postprocess(r)),r}catch(e){return l(e)}}}#t(e,t){return n=>{if(n.message+="\nPlease report this to https://github.com/markedjs/marked.",e){const e="<p>An error occurred:</p><pre>"+c(n.message+"",!0)+"</pre>";return t?Promise.resolve(e):e}if(t)return Promise.reject(n);throw n}}}const ae=new oe;function ce(e,t){return ae.parse(e,t)}ce.options=ce.setOptions=function(e){return ae.setOptions(e),ce.defaults=ae.defaults,n(ce.defaults),ce},ce.getDefaults=t,ce.defaults=e.defaults,ce.use=function(...e){return ae.use(...e),ce.defaults=ae.defaults,n(ce.defaults),ce},ce.walkTokens=function(e,t){return ae.walkTokens(e,t)},ce.parseInline=ae.parseInline,ce.Parser=ie,ce.parser=ie.parse,ce.Renderer=se,ce.TextRenderer=re,ce.Lexer=ne,ce.lexer=ne.lex,ce.Tokenizer=w,ce.Hooks=le,ce.parse=ce;const he=ce.options,pe=ce.setOptions,ue=ce.use,ke=ce.walkTokens,ge=ce.parseInline,fe=ce,de=ie.parse,xe=ne.lex;e.Hooks=le,e.Lexer=ne,e.Marked=oe,e.Parser=ie,e.Renderer=se,e.TextRenderer=re,e.Tokenizer=w,e.getDefaults=t,e.lexer=xe,e.marked=ce,e.options=he,e.parse=fe,e.parseInline=ge,e.parser=de,e.setOptions=pe,e.use=ue,e.walkTokens=ke}));
+
+</script>
+<script>
+
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self).DOMPurify=t()}(this,(function(){"use strict";function e(t){return e="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},e(t)}function t(e,n){return t=Object.setPrototypeOf||function(e,t){return e.__proto__=t,e},t(e,n)}function n(){if("undefined"==typeof Reflect||!Reflect.construct)return!1;if(Reflect.construct.sham)return!1;if("function"==typeof Proxy)return!0;try{return Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],(function(){}))),!0}catch(e){return!1}}function r(e,o,a){return r=n()?Reflect.construct:function(e,n,r){var o=[null];o.push.apply(o,n);var a=new(Function.bind.apply(e,o));return r&&t(a,r.prototype),a},r.apply(null,arguments)}function o(e,t){return function(e){if(Array.isArray(e))return e}(e)||function(e,t){var n=null==e?null:"undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(null==n)return;var r,o,a=[],i=!0,l=!1;try{for(n=n.call(e);!(i=(r=n.next()).done)&&(a.push(r.value),!t||a.length!==t);i=!0);}catch(e){l=!0,o=e}finally{try{i||null==n.return||n.return()}finally{if(l)throw o}}return a}(e,t)||i(e,t)||function(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}()}function a(e){return function(e){if(Array.isArray(e))return l(e)}(e)||function(e){if("undefined"!=typeof Symbol&&null!=e[Symbol.iterator]||null!=e["@@iterator"])return Array.from(e)}(e)||i(e)||function(){throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}()}function i(e,t){if(e){if("string"==typeof e)return l(e,t);var n=Object.prototype.toString.call(e).slice(8,-1);return"Object"===n&&e.constructor&&(n=e.constructor.name),"Map"===n||"Set"===n?Array.from(e):"Arguments"===n||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)?l(e,t):void 0}}function l(e,t){(null==t||t>e.length)&&(t=e.length);for(var n=0,r=new Array(t);n<t;n++)r[n]=e[n];return r}var c=Object.entries,u=Object.setPrototypeOf,s=Object.isFrozen,f=Object.getPrototypeOf,m=Object.getOwnPropertyDescriptor,p=Object.freeze,d=Object.seal,h=Object.create,y="undefined"!=typeof Reflect&&Reflect,g=y.apply,b=y.construct;g||(g=function(e,t,n){return e.apply(t,n)}),p||(p=function(e){return e}),d||(d=function(e){return e}),b||(b=function(e,t){return r(e,a(t))});var v,T=R(Array.prototype.forEach),N=R(Array.prototype.pop),A=R(Array.prototype.push),E=R(String.prototype.toLowerCase),w=R(String.prototype.toString),S=R(String.prototype.match),x=R(String.prototype.replace),_=R(String.prototype.indexOf),k=R(String.prototype.trim),O=R(RegExp.prototype.test),D=(v=TypeError,function(){for(var e=arguments.length,t=new Array(e),n=0;n<e;n++)t[n]=arguments[n];return b(v,t)});function R(e){return function(t){for(var n=arguments.length,r=new Array(n>1?n-1:0),o=1;o<n;o++)r[o-1]=arguments[o];return g(e,t,r)}}function C(e,t,n){n=n||E,u&&u(e,null);for(var r=t.length;r--;){var o=t[r];if("string"==typeof o){var a=n(o);a!==o&&(s(t)||(t[r]=a),o=a)}e[o]=!0}return e}function L(e){var t,n=h(null),r=function(e,t){var n="undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(!n){if(Array.isArray(e)||(n=i(e))||t&&e&&"number"==typeof e.length){n&&(e=n);var r=0,o=function(){};return{s:o,n:function(){return r>=e.length?{done:!0}:{done:!1,value:e[r++]}},e:function(e){throw e},f:o}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}var a,l=!0,c=!1;return{s:function(){n=n.call(e)},n:function(){var e=n.next();return l=e.done,e},e:function(e){c=!0,a=e},f:function(){try{l||null==n.return||n.return()}finally{if(c)throw a}}}}(c(e));try{for(r.s();!(t=r.n()).done;){var a=o(t.value,2),l=a[0],u=a[1];n[l]=u}}catch(e){r.e(e)}finally{r.f()}return n}function M(e,t){for(;null!==e;){var n=m(e,t);if(n){if(n.get)return R(n.get);if("function"==typeof n.value)return R(n.value)}e=f(e)}return function(e){return console.warn("fallback value for",e),null}}var I=p(["a","abbr","acronym","address","area","article","aside","audio","b","bdi","bdo","big","blink","blockquote","body","br","button","canvas","caption","center","cite","code","col","colgroup","content","data","datalist","dd","decorator","del","details","dfn","dialog","dir","div","dl","dt","element","em","fieldset","figcaption","figure","font","footer","form","h1","h2","h3","h4","h5","h6","head","header","hgroup","hr","html","i","img","input","ins","kbd","label","legend","li","main","map","mark","marquee","menu","menuitem","meter","nav","nobr","ol","optgroup","option","output","p","picture","pre","progress","q","rp","rt","ruby","s","samp","section","select","shadow","small","source","spacer","span","strike","strong","style","sub","summary","sup","table","tbody","td","template","textarea","tfoot","th","thead","time","tr","track","tt","u","ul","var","video","wbr"]),F=p(["svg","a","altglyph","altglyphdef","altglyphitem","animatecolor","animatemotion","animatetransform","circle","clippath","defs","desc","ellipse","filter","font","g","glyph","glyphref","hkern","image","line","lineargradient","marker","mask","metadata","mpath","path","pattern","polygon","polyline","radialgradient","rect","stop","style","switch","symbol","text","textpath","title","tref","tspan","view","vkern"]),U=p(["feBlend","feColorMatrix","feComponentTransfer","feComposite","feConvolveMatrix","feDiffuseLighting","feDisplacementMap","feDistantLight","feFlood","feFuncA","feFuncB","feFuncG","feFuncR","feGaussianBlur","feImage","feMerge","feMergeNode","feMorphology","feOffset","fePointLight","feSpecularLighting","feSpotLight","feTile","feTurbulence"]),z=p(["animate","color-profile","cursor","discard","fedropshadow","font-face","font-face-format","font-face-name","font-face-src","font-face-uri","foreignobject","hatch","hatchpath","mesh","meshgradient","meshpatch","meshrow","missing-glyph","script","set","solidcolor","unknown","use"]),H=p(["math","menclose","merror","mfenced","mfrac","mglyph","mi","mlabeledtr","mmultiscripts","mn","mo","mover","mpadded","mphantom","mroot","mrow","ms","mspace","msqrt","mstyle","msub","msup","msubsup","mtable","mtd","mtext","mtr","munder","munderover"]),j=p(["maction","maligngroup","malignmark","mlongdiv","mscarries","mscarry","msgroup","mstack","msline","msrow","semantics","annotation","annotation-xml","mprescripts","none"]),P=p(["#text"]),B=p(["accept","action","align","alt","autocapitalize","autocomplete","autopictureinpicture","autoplay","background","bgcolor","border","capture","cellpadding","cellspacing","checked","cite","class","clear","color","cols","colspan","controls","controlslist","coords","crossorigin","datetime","decoding","default","dir","disabled","disablepictureinpicture","disableremoteplayback","download","draggable","enctype","enterkeyhint","face","for","headers","height","hidden","high","href","hreflang","id","inputmode","integrity","ismap","kind","label","lang","list","loading","loop","low","max","maxlength","media","method","min","minlength","multiple","muted","name","nonce","noshade","novalidate","nowrap","open","optimum","pattern","placeholder","playsinline","poster","preload","pubdate","radiogroup","readonly","rel","required","rev","reversed","role","rows","rowspan","spellcheck","scope","selected","shape","size","sizes","span","srclang","start","src","srcset","step","style","summary","tabindex","title","translate","type","usemap","valign","value","width","xmlns","slot"]),G=p(["accent-height","accumulate","additive","alignment-baseline","ascent","attributename","attributetype","azimuth","basefrequency","baseline-shift","begin","bias","by","class","clip","clippathunits","clip-path","clip-rule","color","color-interpolation","color-interpolation-filters","color-profile","color-rendering","cx","cy","d","dx","dy","diffuseconstant","direction","display","divisor","dur","edgemode","elevation","end","fill","fill-opacity","fill-rule","filter","filterunits","flood-color","flood-opacity","font-family","font-size","font-size-adjust","font-stretch","font-style","font-variant","font-weight","fx","fy","g1","g2","glyph-name","glyphref","gradientunits","gradienttransform","height","href","id","image-rendering","in","in2","k","k1","k2","k3","k4","kerning","keypoints","keysplines","keytimes","lang","lengthadjust","letter-spacing","kernelmatrix","kernelunitlength","lighting-color","local","marker-end","marker-mid","marker-start","markerheight","markerunits","markerwidth","maskcontentunits","maskunits","max","mask","media","method","mode","min","name","numoctaves","offset","operator","opacity","order","orient","orientation","origin","overflow","paint-order","path","pathlength","patterncontentunits","patterntransform","patternunits","points","preservealpha","preserveaspectratio","primitiveunits","r","rx","ry","radius","refx","refy","repeatcount","repeatdur","restart","result","rotate","scale","seed","shape-rendering","specularconstant","specularexponent","spreadmethod","startoffset","stddeviation","stitchtiles","stop-color","stop-opacity","stroke-dasharray","stroke-dashoffset","stroke-linecap","stroke-linejoin","stroke-miterlimit","stroke-opacity","stroke","stroke-width","style","surfacescale","systemlanguage","tabindex","targetx","targety","transform","transform-origin","text-anchor","text-decoration","text-rendering","textlength","type","u1","u2","unicode","values","viewbox","visibility","version","vert-adv-y","vert-origin-x","vert-origin-y","width","word-spacing","wrap","writing-mode","xchannelselector","ychannelselector","x","x1","x2","xmlns","y","y1","y2","z","zoomandpan"]),W=p(["accent","accentunder","align","bevelled","close","columnsalign","columnlines","columnspan","denomalign","depth","dir","display","displaystyle","encoding","fence","frame","height","href","id","largeop","length","linethickness","lspace","lquote","mathbackground","mathcolor","mathsize","mathvariant","maxsize","minsize","movablelimits","notation","numalign","open","rowalign","rowlines","rowspacing","rowspan","rspace","rquote","scriptlevel","scriptminsize","scriptsizemultiplier","selection","separator","separators","stretchy","subscriptshift","supscriptshift","symmetric","voffset","width","xmlns"]),q=p(["xlink:href","xml:id","xlink:title","xml:space","xmlns:xlink"]),Y=d(/\{\{[\w\W]*|[\w\W]*\}\}/gm),$=d(/<%[\w\W]*|[\w\W]*%>/gm),K=d(/\${[\w\W]*}/gm),V=d(/^data-[\-\w.\u00B7-\uFFFF]/),X=d(/^aria-[\-\w]+$/),Z=d(/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i),J=d(/^(?:\w+script|data):/i),Q=d(/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g),ee=d(/^html$/i),te=function(){return"undefined"==typeof window?null:window},ne=function(t,n){if("object"!==e(t)||"function"!=typeof t.createPolicy)return null;var r=null,o="data-tt-policy-suffix";n.currentScript&&n.currentScript.hasAttribute(o)&&(r=n.currentScript.getAttribute(o));var a="dompurify"+(r?"#"+r:"");try{return t.createPolicy(a,{createHTML:function(e){return e},createScriptURL:function(e){return e}})}catch(e){return console.warn("TrustedTypes policy "+a+" could not be created."),null}};var re=function t(){var n=arguments.length>0&&void 0!==arguments[0]?arguments[0]:te(),r=function(e){return t(e)};if(r.version="3.0.0",r.removed=[],!n||!n.document||9!==n.document.nodeType)return r.isSupported=!1,r;var o=n.document,i=n.document,l=n.DocumentFragment,u=n.HTMLTemplateElement,s=n.Node,f=n.Element,m=n.NodeFilter,d=n.NamedNodeMap,h=void 0===d?n.NamedNodeMap||n.MozNamedAttrMap:d,y=n.HTMLFormElement,g=n.DOMParser,b=n.trustedTypes,v=f.prototype,R=M(v,"cloneNode"),re=M(v,"nextSibling"),oe=M(v,"childNodes"),ae=M(v,"parentNode");if("function"==typeof u){var ie=i.createElement("template");ie.content&&ie.content.ownerDocument&&(i=ie.content.ownerDocument)}var le=ne(b,o),ce=le?le.createHTML(""):"",ue=i,se=ue.implementation,fe=ue.createNodeIterator,me=ue.createDocumentFragment,pe=ue.getElementsByTagName,de=o.importNode,he={};r.isSupported="function"==typeof c&&"function"==typeof ae&&se&&void 0!==se.createHTMLDocument;var ye,ge,be=Y,ve=$,Te=K,Ne=V,Ae=X,Ee=J,we=Q,Se=Z,xe=null,_e=C({},[].concat(a(I),a(F),a(U),a(H),a(P))),ke=null,Oe=C({},[].concat(a(B),a(G),a(W),a(q))),De=Object.seal(Object.create(null,{tagNameCheck:{writable:!0,configurable:!1,enumerable:!0,value:null},attributeNameCheck:{writable:!0,configurable:!1,enumerable:!0,value:null},allowCustomizedBuiltInElements:{writable:!0,configurable:!1,enumerable:!0,value:!1}})),Re=null,Ce=null,Le=!0,Me=!0,Ie=!1,Fe=!0,Ue=!1,ze=!1,He=!1,je=!1,Pe=!1,Be=!1,Ge=!1,We=!0,qe=!1,Ye="user-content-",$e=!0,Ke=!1,Ve={},Xe=null,Ze=C({},["annotation-xml","audio","colgroup","desc","foreignobject","head","iframe","math","mi","mn","mo","ms","mtext","noembed","noframes","noscript","plaintext","script","style","svg","template","thead","title","video","xmp"]),Je=null,Qe=C({},["audio","video","img","source","image","track"]),et=null,tt=C({},["alt","class","for","id","label","name","pattern","placeholder","role","summary","title","value","style","xmlns"]),nt="http://www.w3.org/1998/Math/MathML",rt="http://www.w3.org/2000/svg",ot="http://www.w3.org/1999/xhtml",at=ot,it=!1,lt=null,ct=C({},[nt,rt,ot],w),ut=["application/xhtml+xml","text/html"],st="text/html",ft=null,mt=i.createElement("form"),pt=function(e){return e instanceof RegExp||e instanceof Function},dt=function(t){ft&&ft===t||(t&&"object"===e(t)||(t={}),t=L(t),ye=ye=-1===ut.indexOf(t.PARSER_MEDIA_TYPE)?st:t.PARSER_MEDIA_TYPE,ge="application/xhtml+xml"===ye?w:E,xe="ALLOWED_TAGS"in t?C({},t.ALLOWED_TAGS,ge):_e,ke="ALLOWED_ATTR"in t?C({},t.ALLOWED_ATTR,ge):Oe,lt="ALLOWED_NAMESPACES"in t?C({},t.ALLOWED_NAMESPACES,w):ct,et="ADD_URI_SAFE_ATTR"in t?C(L(tt),t.ADD_URI_SAFE_ATTR,ge):tt,Je="ADD_DATA_URI_TAGS"in t?C(L(Qe),t.ADD_DATA_URI_TAGS,ge):Qe,Xe="FORBID_CONTENTS"in t?C({},t.FORBID_CONTENTS,ge):Ze,Re="FORBID_TAGS"in t?C({},t.FORBID_TAGS,ge):{},Ce="FORBID_ATTR"in t?C({},t.FORBID_ATTR,ge):{},Ve="USE_PROFILES"in t&&t.USE_PROFILES,Le=!1!==t.ALLOW_ARIA_ATTR,Me=!1!==t.ALLOW_DATA_ATTR,Ie=t.ALLOW_UNKNOWN_PROTOCOLS||!1,Fe=!1!==t.ALLOW_SELF_CLOSE_IN_ATTR,Ue=t.SAFE_FOR_TEMPLATES||!1,ze=t.WHOLE_DOCUMENT||!1,Pe=t.RETURN_DOM||!1,Be=t.RETURN_DOM_FRAGMENT||!1,Ge=t.RETURN_TRUSTED_TYPE||!1,je=t.FORCE_BODY||!1,We=!1!==t.SANITIZE_DOM,qe=t.SANITIZE_NAMED_PROPS||!1,$e=!1!==t.KEEP_CONTENT,Ke=t.IN_PLACE||!1,Se=t.ALLOWED_URI_REGEXP||Se,at=t.NAMESPACE||ot,t.CUSTOM_ELEMENT_HANDLING&&pt(t.CUSTOM_ELEMENT_HANDLING.tagNameCheck)&&(De.tagNameCheck=t.CUSTOM_ELEMENT_HANDLING.tagNameCheck),t.CUSTOM_ELEMENT_HANDLING&&pt(t.CUSTOM_ELEMENT_HANDLING.attributeNameCheck)&&(De.attributeNameCheck=t.CUSTOM_ELEMENT_HANDLING.attributeNameCheck),t.CUSTOM_ELEMENT_HANDLING&&"boolean"==typeof t.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements&&(De.allowCustomizedBuiltInElements=t.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements),Ue&&(Me=!1),Be&&(Pe=!0),Ve&&(xe=C({},a(P)),ke=[],!0===Ve.html&&(C(xe,I),C(ke,B)),!0===Ve.svg&&(C(xe,F),C(ke,G),C(ke,q)),!0===Ve.svgFilters&&(C(xe,U),C(ke,G),C(ke,q)),!0===Ve.mathMl&&(C(xe,H),C(ke,W),C(ke,q))),t.ADD_TAGS&&(xe===_e&&(xe=L(xe)),C(xe,t.ADD_TAGS,ge)),t.ADD_ATTR&&(ke===Oe&&(ke=L(ke)),C(ke,t.ADD_ATTR,ge)),t.ADD_URI_SAFE_ATTR&&C(et,t.ADD_URI_SAFE_ATTR,ge),t.FORBID_CONTENTS&&(Xe===Ze&&(Xe=L(Xe)),C(Xe,t.FORBID_CONTENTS,ge)),$e&&(xe["#text"]=!0),ze&&C(xe,["html","head","body"]),xe.table&&(C(xe,["tbody"]),delete Re.tbody),p&&p(t),ft=t)},ht=C({},["mi","mo","mn","ms","mtext"]),yt=C({},["foreignobject","desc","title","annotation-xml"]),gt=C({},["title","style","font","a","script"]),bt=C({},F);C(bt,U),C(bt,z);var vt=C({},H);C(vt,j);var Tt=function(e){var t=ae(e);t&&t.tagName||(t={namespaceURI:at,tagName:"template"});var n=E(e.tagName),r=E(t.tagName);return!!lt[e.namespaceURI]&&(e.namespaceURI===rt?t.namespaceURI===ot?"svg"===n:t.namespaceURI===nt?"svg"===n&&("annotation-xml"===r||ht[r]):Boolean(bt[n]):e.namespaceURI===nt?t.namespaceURI===ot?"math"===n:t.namespaceURI===rt?"math"===n&&yt[r]:Boolean(vt[n]):e.namespaceURI===ot?!(t.namespaceURI===rt&&!yt[r])&&(!(t.namespaceURI===nt&&!ht[r])&&(!vt[n]&&(gt[n]||!bt[n]))):!("application/xhtml+xml"!==ye||!lt[e.namespaceURI]))},Nt=function(e){A(r.removed,{element:e});try{e.parentNode.removeChild(e)}catch(t){e.remove()}},At=function(e,t){try{A(r.removed,{attribute:t.getAttributeNode(e),from:t})}catch(e){A(r.removed,{attribute:null,from:t})}if(t.removeAttribute(e),"is"===e&&!ke[e])if(Pe||Be)try{Nt(t)}catch(e){}else try{t.setAttribute(e,"")}catch(e){}},Et=function(e){var t,n;if(je)e="<remove></remove>"+e;else{var r=S(e,/^[\r\n\t ]+/);n=r&&r[0]}"application/xhtml+xml"===ye&&at===ot&&(e='<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>'+e+"</body></html>");var o=le?le.createHTML(e):e;if(at===ot)try{t=(new g).parseFromString(o,ye)}catch(e){}if(!t||!t.documentElement){t=se.createDocument(at,"template",null);try{t.documentElement.innerHTML=it?ce:o}catch(e){}}var a=t.body||t.documentElement;return e&&n&&a.insertBefore(i.createTextNode(n),a.childNodes[0]||null),at===ot?pe.call(t,ze?"html":"body")[0]:ze?t.documentElement:a},wt=function(e){return fe.call(e.ownerDocument||e,e,m.SHOW_ELEMENT|m.SHOW_COMMENT|m.SHOW_TEXT,null,!1)},St=function(e){return e instanceof y&&("string"!=typeof e.nodeName||"string"!=typeof e.textContent||"function"!=typeof e.removeChild||!(e.attributes instanceof h)||"function"!=typeof e.removeAttribute||"function"!=typeof e.setAttribute||"string"!=typeof e.namespaceURI||"function"!=typeof e.insertBefore||"function"!=typeof e.hasChildNodes)},xt=function(t){return"object"===e(s)?t instanceof s:t&&"object"===e(t)&&"number"==typeof t.nodeType&&"string"==typeof t.nodeName},_t=function(e,t,n){he[e]&&T(he[e],(function(e){e.call(r,t,n,ft)}))},kt=function(e){var t;if(_t("beforeSanitizeElements",e,null),St(e))return Nt(e),!0;var n=ge(e.nodeName);if(_t("uponSanitizeElement",e,{tagName:n,allowedTags:xe}),e.hasChildNodes()&&!xt(e.firstElementChild)&&(!xt(e.content)||!xt(e.content.firstElementChild))&&O(/<[/\w]/g,e.innerHTML)&&O(/<[/\w]/g,e.textContent))return Nt(e),!0;if(!xe[n]||Re[n]){if(!Re[n]&&Dt(n)){if(De.tagNameCheck instanceof RegExp&&O(De.tagNameCheck,n))return!1;if(De.tagNameCheck instanceof Function&&De.tagNameCheck(n))return!1}if($e&&!Xe[n]){var o=ae(e)||e.parentNode,a=oe(e)||e.childNodes;if(a&&o)for(var i=a.length-1;i>=0;--i)o.insertBefore(R(a[i],!0),re(e))}return Nt(e),!0}return e instanceof f&&!Tt(e)?(Nt(e),!0):"noscript"!==n&&"noembed"!==n||!O(/<\/no(script|embed)/i,e.innerHTML)?(Ue&&3===e.nodeType&&(t=e.textContent,t=x(t,be," "),t=x(t,ve," "),t=x(t,Te," "),e.textContent!==t&&(A(r.removed,{element:e.cloneNode()}),e.textContent=t)),_t("afterSanitizeElements",e,null),!1):(Nt(e),!0)},Ot=function(e,t,n){if(We&&("id"===t||"name"===t)&&(n in i||n in mt))return!1;if(Me&&!Ce[t]&&O(Ne,t));else if(Le&&O(Ae,t));else if(!ke[t]||Ce[t]){if(!(Dt(e)&&(De.tagNameCheck instanceof RegExp&&O(De.tagNameCheck,e)||De.tagNameCheck instanceof Function&&De.tagNameCheck(e))&&(De.attributeNameCheck instanceof RegExp&&O(De.attributeNameCheck,t)||De.attributeNameCheck instanceof Function&&De.attributeNameCheck(t))||"is"===t&&De.allowCustomizedBuiltInElements&&(De.tagNameCheck instanceof RegExp&&O(De.tagNameCheck,n)||De.tagNameCheck instanceof Function&&De.tagNameCheck(n))))return!1}else if(et[t]);else if(O(Se,x(n,we,"")));else if("src"!==t&&"xlink:href"!==t&&"href"!==t||"script"===e||0!==_(n,"data:")||!Je[e]){if(Ie&&!O(Ee,x(n,we,"")));else if(n)return!1}else;return!0},Dt=function(e){return e.indexOf("-")>0},Rt=function(t){var n,o,a,i;_t("beforeSanitizeAttributes",t,null);var l=t.attributes;if(l){var c={attrName:"",attrValue:"",keepAttr:!0,allowedAttributes:ke};for(i=l.length;i--;){var u=n=l[i],s=u.name,f=u.namespaceURI;if(o="value"===s?n.value:k(n.value),a=ge(s),c.attrName=a,c.attrValue=o,c.keepAttr=!0,c.forceKeepAttr=void 0,_t("uponSanitizeAttribute",t,c),o=c.attrValue,!c.forceKeepAttr&&(At(s,t),c.keepAttr))if(Fe||!O(/\/>/i,o)){Ue&&(o=x(o,be," "),o=x(o,ve," "),o=x(o,Te," "));var m=ge(t.nodeName);if(Ot(m,a,o)){if(!qe||"id"!==a&&"name"!==a||(At(s,t),o=Ye+o),le&&"object"===e(b)&&"function"==typeof b.getAttributeType)if(f);else switch(b.getAttributeType(m,a)){case"TrustedHTML":o=le.createHTML(o);break;case"TrustedScriptURL":o=le.createScriptURL(o)}try{f?t.setAttributeNS(f,s,o):t.setAttribute(s,o),N(r.removed)}catch(e){}}}else At(s,t)}_t("afterSanitizeAttributes",t,null)}},Ct=function e(t){var n,r=wt(t);for(_t("beforeSanitizeShadowDOM",t,null);n=r.nextNode();)_t("uponSanitizeShadowNode",n,null),kt(n)||(n.content instanceof l&&e(n.content),Rt(n));_t("afterSanitizeShadowDOM",t,null)};return r.sanitize=function(e){var t,n,a,i,c=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{};if((it=!e)&&(e="\x3c!--\x3e"),"string"!=typeof e&&!xt(e)){if("function"!=typeof e.toString)throw D("toString is not a function");if("string"!=typeof(e=e.toString()))throw D("dirty is not a string, aborting")}if(!r.isSupported)return e;if(He||dt(c),r.removed=[],"string"==typeof e&&(Ke=!1),Ke){if(e.nodeName){var u=ge(e.nodeName);if(!xe[u]||Re[u])throw D("root node is forbidden and cannot be sanitized in-place")}}else if(e instanceof s)1===(n=(t=Et("\x3c!----\x3e")).ownerDocument.importNode(e,!0)).nodeType&&"BODY"===n.nodeName||"HTML"===n.nodeName?t=n:t.appendChild(n);else{if(!Pe&&!Ue&&!ze&&-1===e.indexOf("<"))return le&&Ge?le.createHTML(e):e;if(!(t=Et(e)))return Pe?null:Ge?ce:""}t&&je&&Nt(t.firstChild);for(var f=wt(Ke?e:t);a=f.nextNode();)kt(a)||(a.content instanceof l&&Ct(a.content),Rt(a));if(Ke)return e;if(Pe){if(Be)for(i=me.call(t.ownerDocument);t.firstChild;)i.appendChild(t.firstChild);else i=t;return(ke.shadowroot||ke.shadowrootmod)&&(i=de.call(o,i,!0)),i}var m=ze?t.outerHTML:t.innerHTML;return ze&&xe["!doctype"]&&t.ownerDocument&&t.ownerDocument.doctype&&t.ownerDocument.doctype.name&&O(ee,t.ownerDocument.doctype.name)&&(m="<!DOCTYPE "+t.ownerDocument.doctype.name+">\n"+m),Ue&&(m=x(m,be," "),m=x(m,ve," "),m=x(m,Te," ")),le&&Ge?le.createHTML(m):m},r.setConfig=function(e){dt(e),He=!0},r.clearConfig=function(){ft=null,He=!1},r.isValidAttribute=function(e,t,n){ft||dt({});var r=ge(e),o=ge(t);return Ot(r,o,n)},r.addHook=function(e,t){"function"==typeof t&&(he[e]=he[e]||[],A(he[e],t))},r.removeHook=function(e){if(he[e])return N(he[e])},r.removeHooks=function(e){he[e]&&(he[e]=[])},r.removeAllHooks=function(){he={}},r}();return re}));
+
+
+</script>
+<script>
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.TurndownService = factory());
+}(this, (function () { 'use strict';
+
+  function extend (destination) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+      for (var key in source) {
+        if (source.hasOwnProperty(key)) destination[key] = source[key];
+      }
+    }
+    return destination
+  }
+
+  function repeat (character, count) {
+    return Array(count + 1).join(character)
+  }
+
+  function trimLeadingNewlines (string) {
+    return string.replace(/^\n*/, '')
+  }
+
+  function trimTrailingNewlines (string) {
+    
+    var indexEnd = string.length;
+    while (indexEnd > 0 && string[indexEnd - 1] === '\n') indexEnd--;
+    return string.substring(0, indexEnd)
+  }
+
+  var blockElements = [
+    'ADDRESS', 'ARTICLE', 'ASIDE', 'AUDIO', 'BLOCKQUOTE', 'BODY', 'CANVAS',
+    'CENTER', 'DD', 'DIR', 'DIV', 'DL', 'DT', 'FIELDSET', 'FIGCAPTION', 'FIGURE',
+    'FOOTER', 'FORM', 'FRAMESET', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEADER',
+    'HGROUP', 'HR', 'HTML', 'ISINDEX', 'LI', 'MAIN', 'MENU', 'NAV', 'NOFRAMES',
+    'NOSCRIPT', 'OL', 'OUTPUT', 'P', 'PRE', 'SECTION', 'TABLE', 'TBODY', 'TD',
+    'TFOOT', 'TH', 'THEAD', 'TR', 'UL'
+  ];
+
+  function isBlock (node) {
+    return is(node, blockElements)
+  }
+
+  var voidElements = [
+    'AREA', 'BASE', 'BR', 'COL', 'COMMAND', 'EMBED', 'HR', 'IMG', 'INPUT',
+    'KEYGEN', 'LINK', 'META', 'PARAM', 'SOURCE', 'TRACK', 'WBR'
+  ];
+
+  function isVoid (node) {
+    return is(node, voidElements)
+  }
+
+  function hasVoid (node) {
+    return has(node, voidElements)
+  }
+
+  var meaningfulWhenBlankElements = [
+    'A', 'TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TH', 'TD', 'IFRAME', 'SCRIPT',
+    'AUDIO', 'VIDEO'
+  ];
+
+  function isMeaningfulWhenBlank (node) {
+    return is(node, meaningfulWhenBlankElements)
+  }
+
+  function hasMeaningfulWhenBlank (node) {
+    return has(node, meaningfulWhenBlankElements)
+  }
+
+  function is (node, tagNames) {
+    return tagNames.indexOf(node.nodeName) >= 0
+  }
+
+  function has (node, tagNames) {
+    return (
+      node.getElementsByTagName &&
+      tagNames.some(function (tagName) {
+        return node.getElementsByTagName(tagName).length
+      })
+    )
+  }
+
+  var rules = {};
+
+  rules.paragraph = {
+    filter: 'p',
+
+    replacement: function (content) {
+      return '\n\n' + content + '\n\n'
+    }
+  };
+
+  rules.lineBreak = {
+    filter: 'br',
+
+    replacement: function (content, node, options) {
+      return options.br + '\n'
+    }
+  };
+
+  rules.heading = {
+    filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+
+    replacement: function (content, node, options) {
+      var hLevel = Number(node.nodeName.charAt(1));
+
+      if (options.headingStyle === 'setext' && hLevel < 3) {
+        var underline = repeat((hLevel === 1 ? '=' : '-'), content.length);
+        return (
+          '\n\n' + content + '\n' + underline + '\n\n'
+        )
+      } else {
+        return '\n\n' + repeat('#', hLevel) + ' ' + content + '\n\n'
+      }
+    }
+  };
+
+  rules.blockquote = {
+    filter: 'blockquote',
+
+    replacement: function (content) {
+      content = content.replace(/^\n+|\n+$/g, '');
+      content = content.replace(/^/gm, '> ');
+      return '\n\n' + content + '\n\n'
+    }
+  };
+
+  rules.list = {
+    filter: ['ul', 'ol'],
+
+    replacement: function (content, node) {
+      var parent = node.parentNode;
+      if (parent.nodeName === 'LI' && parent.lastElementChild === node) {
+        return '\n' + content
+      } else {
+        return '\n\n' + content + '\n\n'
+      }
+    }
+  };
+
+  rules.listItem = {
+    filter: 'li',
+
+    replacement: function (content, node, options) {
+      content = content
+        .replace(/^\n+/, '') 
+        .replace(/\n+$/, '\n') 
+        .replace(/\n/gm, '\n    '); 
+      var prefix = options.bulletListMarker + '   ';
+      var parent = node.parentNode;
+      if (parent.nodeName === 'OL') {
+        var start = parent.getAttribute('start');
+        var index = Array.prototype.indexOf.call(parent.children, node);
+        prefix = (start ? Number(start) + index : index + 1) + '.  ';
+      }
+      return (
+        prefix + content + (node.nextSibling && !/\n$/.test(content) ? '\n' : '')
+      )
+    }
+  };
+
+  rules.indentedCodeBlock = {
+    filter: function (node, options) {
+      return (
+        options.codeBlockStyle === 'indented' &&
+        node.nodeName === 'PRE' &&
+        node.firstChild &&
+        node.firstChild.nodeName === 'CODE'
+      )
+    },
+
+    replacement: function (content, node, options) {
+      return (
+        '\n\n    ' +
+        node.firstChild.textContent.replace(/\n/g, '\n    ') +
+        '\n\n'
+      )
+    }
+  };
+
+  rules.fencedCodeBlock = {
+    filter: function (node, options) {
+      return (
+        options.codeBlockStyle === 'fenced' &&
+        node.nodeName === 'PRE' &&
+        node.firstChild &&
+        node.firstChild.nodeName === 'CODE'
+      )
+    },
+
+    replacement: function (content, node, options) {
+      var className = node.firstChild.getAttribute('class') || '';
+      var language = (className.match(/language-(\S+)/) || [null, ''])[1];
+      var code = node.firstChild.textContent;
+
+      var fenceChar = options.fence.charAt(0);
+      var fenceSize = 3;
+      var fenceInCodeRegex = new RegExp('^' + fenceChar + '{3,}', 'gm');
+
+      var match;
+      while ((match = fenceInCodeRegex.exec(code))) {
+        if (match[0].length >= fenceSize) {
+          fenceSize = match[0].length + 1;
+        }
+      }
+
+      var fence = repeat(fenceChar, fenceSize);
+
+      return (
+        '\n\n' + fence + language + '\n' +
+        code.replace(/\n$/, '') +
+        '\n' + fence + '\n\n'
+      )
+    }
+  };
+
+  rules.horizontalRule = {
+    filter: 'hr',
+
+    replacement: function (content, node, options) {
+      return '\n\n' + options.hr + '\n\n'
+    }
+  };
+
+  rules.inlineLink = {
+    filter: function (node, options) {
+      return (
+        options.linkStyle === 'inlined' &&
+        node.nodeName === 'A' &&
+        node.getAttribute('href')
+      )
+    },
+
+    replacement: function (content, node) {
+      var href = node.getAttribute('href');
+      var title = cleanAttribute(node.getAttribute('title'));
+      if (title) title = ' "' + title + '"';
+      return '[' + content + '](' + href + title + ')'
+    }
+  };
+
+  rules.referenceLink = {
+    filter: function (node, options) {
+      return (
+        options.linkStyle === 'referenced' &&
+        node.nodeName === 'A' &&
+        node.getAttribute('href')
+      )
+    },
+
+    replacement: function (content, node, options) {
+      var href = node.getAttribute('href');
+      var title = cleanAttribute(node.getAttribute('title'));
+      if (title) title = ' "' + title + '"';
+      var replacement;
+      var reference;
+
+      switch (options.linkReferenceStyle) {
+        case 'collapsed':
+          replacement = '[' + content + '][]';
+          reference = '[' + content + ']: ' + href + title;
+          break
+        case 'shortcut':
+          replacement = '[' + content + ']';
+          reference = '[' + content + ']: ' + href + title;
+          break
+        default:
+          var id = this.references.length + 1;
+          replacement = '[' + content + '][' + id + ']';
+          reference = '[' + id + ']: ' + href + title;
+      }
+
+      this.references.push(reference);
+      return replacement
+    },
+
+    references: [],
+
+    append: function (options) {
+      var references = '';
+      if (this.references.length) {
+        references = '\n\n' + this.references.join('\n') + '\n\n';
+        this.references = []; 
+      }
+      return references
+    }
+  };
+
+  rules.emphasis = {
+    filter: ['em', 'i'],
+
+    replacement: function (content, node, options) {
+      if (!content.trim()) return ''
+      return options.emDelimiter + content + options.emDelimiter
+    }
+  };
+
+  rules.strong = {
+    filter: ['strong', 'b'],
+
+    replacement: function (content, node, options) {
+      if (!content.trim()) return ''
+      return options.strongDelimiter + content + options.strongDelimiter
+    }
+  };
+
+  rules.code = {
+    filter: function (node) {
+      var hasSiblings = node.previousSibling || node.nextSibling;
+      var isCodeBlock = node.parentNode.nodeName === 'PRE' && !hasSiblings;
+
+      return node.nodeName === 'CODE' && !isCodeBlock
+    },
+
+    replacement: function (content) {
+      if (!content) return ''
+      content = content.replace(/\r?\n|\r/g, ' ');
+
+      var extraSpace = /^`|^ .*?[^ ].* $|`$/.test(content) ? ' ' : '';
+      var delimiter = '`';
+      var matches = content.match(/`+/gm) || [];
+      while (matches.indexOf(delimiter) !== -1) delimiter = delimiter + '`';
+
+      return delimiter + extraSpace + content + extraSpace + delimiter
+    }
+  };
+
+  rules.image = {
+    filter: 'img',
+
+    replacement: function (content, node) {
+      var alt = cleanAttribute(node.getAttribute('alt'));
+      var src = node.getAttribute('src') || '';
+      var title = cleanAttribute(node.getAttribute('title'));
+      var titlePart = title ? ' "' + title + '"' : '';
+      return src ? '![' + alt + ']' + '(' + src + titlePart + ')' : ''
+    }
+  };
+
+  function cleanAttribute (attribute) {
+    return attribute ? attribute.replace(/(\n+\s*)+/g, '\n') : ''
+  }
+
+  
+
+  function Rules (options) {
+    this.options = options;
+    this._keep = [];
+    this._remove = [];
+
+    this.blankRule = {
+      replacement: options.blankReplacement
+    };
+
+    this.keepReplacement = options.keepReplacement;
+
+    this.defaultRule = {
+      replacement: options.defaultReplacement
+    };
+
+    this.array = [];
+    for (var key in options.rules) this.array.push(options.rules[key]);
+  }
+
+  Rules.prototype = {
+    add: function (key, rule) {
+      this.array.unshift(rule);
+    },
+
+    keep: function (filter) {
+      this._keep.unshift({
+        filter: filter,
+        replacement: this.keepReplacement
+      });
+    },
+
+    remove: function (filter) {
+      this._remove.unshift({
+        filter: filter,
+        replacement: function () {
+          return ''
+        }
+      });
+    },
+
+    forNode: function (node) {
+      if (node.isBlank) return this.blankRule
+      var rule;
+
+      if ((rule = findRule(this.array, node, this.options))) return rule
+      if ((rule = findRule(this._keep, node, this.options))) return rule
+      if ((rule = findRule(this._remove, node, this.options))) return rule
+
+      return this.defaultRule
+    },
+
+    forEach: function (fn) {
+      for (var i = 0; i < this.array.length; i++) fn(this.array[i], i);
+    }
+  };
+
+  function findRule (rules, node, options) {
+    for (var i = 0; i < rules.length; i++) {
+      var rule = rules[i];
+      if (filterValue(rule, node, options)) return rule
+    }
+    return void 0
+  }
+
+  function filterValue (rule, node, options) {
+    var filter = rule.filter;
+    if (typeof filter === 'string') {
+      if (filter === node.nodeName.toLowerCase()) return true
+    } else if (Array.isArray(filter)) {
+      if (filter.indexOf(node.nodeName.toLowerCase()) > -1) return true
+    } else if (typeof filter === 'function') {
+      if (filter.call(rule, node, options)) return true
+    } else {
+      throw new TypeError('`filter` needs to be a string, array, or function')
+    }
+  }
+
+  
+
+  
+  function collapseWhitespace (options) {
+    var element = options.element;
+    var isBlock = options.isBlock;
+    var isVoid = options.isVoid;
+    var isPre = options.isPre || function (node) {
+      return node.nodeName === 'PRE'
+    };
+
+    if (!element.firstChild || isPre(element)) return
+
+    var prevText = null;
+    var keepLeadingWs = false;
+
+    var prev = null;
+    var node = next(prev, element, isPre);
+
+    while (node !== element) {
+      if (node.nodeType === 3 || node.nodeType === 4) { 
+        var text = node.data.replace(/[ \r\n\t]+/g, ' ');
+
+        if ((!prevText || / $/.test(prevText.data)) &&
+            !keepLeadingWs && text[0] === ' ') {
+          text = text.substr(1);
+        }
+
+        
+        if (!text) {
+          node = remove(node);
+          continue
+        }
+
+        node.data = text;
+
+        prevText = node;
+      } else if (node.nodeType === 1) { 
+        if (isBlock(node) || node.nodeName === 'BR') {
+          if (prevText) {
+            prevText.data = prevText.data.replace(/ $/, '');
+          }
+
+          prevText = null;
+          keepLeadingWs = false;
+        } else if (isVoid(node) || isPre(node)) {
+          
+          prevText = null;
+          keepLeadingWs = true;
+        } else if (prevText) {
+          
+          keepLeadingWs = false;
+        }
+      } else {
+        node = remove(node);
+        continue
+      }
+
+      var nextNode = next(prev, node, isPre);
+      prev = node;
+      node = nextNode;
+    }
+
+    if (prevText) {
+      prevText.data = prevText.data.replace(/ $/, '');
+      if (!prevText.data) {
+        remove(prevText);
+      }
+    }
+  }
+
+  
+  function remove (node) {
+    var next = node.nextSibling || node.parentNode;
+
+    node.parentNode.removeChild(node);
+
+    return next
+  }
+
+  
+  function next (prev, current, isPre) {
+    if ((prev && prev.parentNode === current) || isPre(current)) {
+      return current.nextSibling || current.parentNode
+    }
+
+    return current.firstChild || current.nextSibling || current.parentNode
+  }
+
+  
+
+  var root = (typeof window !== 'undefined' ? window : {});
+
+  
+
+  function canParseHTMLNatively () {
+    var Parser = root.DOMParser;
+    var canParse = false;
+
+    
+    
+    try {
+      
+      if (new Parser().parseFromString('', 'text/html')) {
+        canParse = true;
+      }
+    } catch (e) {}
+
+    return canParse
+  }
+
+  function createHTMLParser () {
+    var Parser = function () {};
+
+    {
+      if (shouldUseActiveX()) {
+        Parser.prototype.parseFromString = function (string) {
+          var doc = new window.ActiveXObject('htmlfile');
+          doc.designMode = 'on'; 
+          doc.open();
+          doc.write(string);
+          doc.close();
+          return doc
+        };
+      } else {
+        Parser.prototype.parseFromString = function (string) {
+          var doc = document.implementation.createHTMLDocument('');
+          doc.open();
+          doc.write(string);
+          doc.close();
+          return doc
+        };
+      }
+    }
+    return Parser
+  }
+
+  function shouldUseActiveX () {
+    var useActiveX = false;
+    try {
+      document.implementation.createHTMLDocument('').open();
+    } catch (e) {
+      if (window.ActiveXObject) useActiveX = true;
+    }
+    return useActiveX
+  }
+
+  var HTMLParser = canParseHTMLNatively() ? root.DOMParser : createHTMLParser();
+
+  function RootNode (input, options) {
+    var root;
+    if (typeof input === 'string') {
+      var doc = htmlParser().parseFromString(
+        
+        
+        
+        '<x-turndown id="turndown-root">' + input + '</x-turndown>',
+        'text/html'
+      );
+      root = doc.getElementById('turndown-root');
+    } else {
+      root = input.cloneNode(true);
+    }
+    collapseWhitespace({
+      element: root,
+      isBlock: isBlock,
+      isVoid: isVoid,
+      isPre: options.preformattedCode ? isPreOrCode : null
+    });
+
+    return root
+  }
+
+  var _htmlParser;
+  function htmlParser () {
+    _htmlParser = _htmlParser || new HTMLParser();
+    return _htmlParser
+  }
+
+  function isPreOrCode (node) {
+    return node.nodeName === 'PRE' || node.nodeName === 'CODE'
+  }
+
+  function Node (node, options) {
+    node.isBlock = isBlock(node);
+    node.isCode = node.nodeName === 'CODE' || node.parentNode.isCode;
+    node.isBlank = isBlank(node);
+    node.flankingWhitespace = flankingWhitespace(node, options);
+    return node
+  }
+
+  function isBlank (node) {
+    return (
+      !isVoid(node) &&
+      !isMeaningfulWhenBlank(node) &&
+      /^\s*$/i.test(node.textContent) &&
+      !hasVoid(node) &&
+      !hasMeaningfulWhenBlank(node)
+    )
+  }
+
+  function flankingWhitespace (node, options) {
+    if (node.isBlock || (options.preformattedCode && node.isCode)) {
+      return { leading: '', trailing: '' }
+    }
+
+    var edges = edgeWhitespace(node.textContent);
+
+    
+    if (edges.leadingAscii && isFlankedByWhitespace('left', node, options)) {
+      edges.leading = edges.leadingNonAscii;
+    }
+
+    
+    if (edges.trailingAscii && isFlankedByWhitespace('right', node, options)) {
+      edges.trailing = edges.trailingNonAscii;
+    }
+
+    return { leading: edges.leading, trailing: edges.trailing }
+  }
+
+  function edgeWhitespace (string) {
+    var m = string.match(/^(([ \t\r\n]*)(\s*))(?:(?=\S)[\s\S]*\S)?((\s*?)([ \t\r\n]*))$/);
+    return {
+      leading: m[1], 
+      leadingAscii: m[2],
+      leadingNonAscii: m[3],
+      trailing: m[4], 
+      trailingNonAscii: m[5],
+      trailingAscii: m[6]
+    }
+  }
+
+  function isFlankedByWhitespace (side, node, options) {
+    var sibling;
+    var regExp;
+    var isFlanked;
+
+    if (side === 'left') {
+      sibling = node.previousSibling;
+      regExp = / $/;
+    } else {
+      sibling = node.nextSibling;
+      regExp = /^ /;
+    }
+
+    if (sibling) {
+      if (sibling.nodeType === 3) {
+        isFlanked = regExp.test(sibling.nodeValue);
+      } else if (options.preformattedCode && sibling.nodeName === 'CODE') {
+        isFlanked = false;
+      } else if (sibling.nodeType === 1 && !isBlock(sibling)) {
+        isFlanked = regExp.test(sibling.textContent);
+      }
+    }
+    return isFlanked
+  }
+
+  var reduce = Array.prototype.reduce;
+  var escapes = [
+    [/\\/g, '\\\\'],
+    [/\*/g, '\\*'],
+    [/^-/g, '\\-'],
+    [/^\+ /g, '\\+ '],
+    [/^(=+)/g, '\\$1'],
+    [/^(#{1,6}) /g, '\\$1 '],
+    [/`/g, '\\`'],
+    [/^~~~/g, '\\~~~'],
+    [/\[/g, '\\['],
+    [/\]/g, '\\]'],
+    [/^>/g, '\\>'],
+    [/_/g, '\\_'],
+    [/^(\d+)\. /g, '$1\\. ']
+  ];
+
+  function TurndownService (options) {
+    if (!(this instanceof TurndownService)) return new TurndownService(options)
+
+    var defaults = {
+      rules: rules,
+      headingStyle: 'setext',
+      hr: '* * *',
+      bulletListMarker: '*',
+      codeBlockStyle: 'indented',
+      fence: '```',
+      emDelimiter: '_',
+      strongDelimiter: '**',
+      linkStyle: 'inlined',
+      linkReferenceStyle: 'full',
+      br: '  ',
+      preformattedCode: false,
+      blankReplacement: function (content, node) {
+        return node.isBlock ? '\n\n' : ''
+      },
+      keepReplacement: function (content, node) {
+        return node.isBlock ? '\n\n' + node.outerHTML + '\n\n' : node.outerHTML
+      },
+      defaultReplacement: function (content, node) {
+        return node.isBlock ? '\n\n' + content + '\n\n' : content
+      }
+    };
+    this.options = extend({}, defaults, options);
+    this.rules = new Rules(this.options);
+  }
+
+  TurndownService.prototype = {
+    
+
+    turndown: function (input) {
+      if (!canConvert(input)) {
+        throw new TypeError(
+          input + ' is not a string, or an element/document/fragment node.'
+        )
+      }
+
+      if (input === '') return ''
+
+      var output = process.call(this, new RootNode(input, this.options));
+      return postProcess.call(this, output)
+    },
+
+    
+
+    use: function (plugin) {
+      if (Array.isArray(plugin)) {
+        for (var i = 0; i < plugin.length; i++) this.use(plugin[i]);
+      } else if (typeof plugin === 'function') {
+        plugin(this);
+      } else {
+        throw new TypeError('plugin must be a Function or an Array of Functions')
+      }
+      return this
+    },
+
+    
+
+    addRule: function (key, rule) {
+      this.rules.add(key, rule);
+      return this
+    },
+
+    
+
+    keep: function (filter) {
+      this.rules.keep(filter);
+      return this
+    },
+
+    
+
+    remove: function (filter) {
+      this.rules.remove(filter);
+      return this
+    },
+
+    
+
+    escape: function (string) {
+      return escapes.reduce(function (accumulator, escape) {
+        return accumulator.replace(escape[0], escape[1])
+      }, string)
+    }
+  };
+
+  
+
+  function process (parentNode) {
+    var self = this;
+    return reduce.call(parentNode.childNodes, function (output, node) {
+      node = new Node(node, self.options);
+
+      var replacement = '';
+      if (node.nodeType === 3) {
+        replacement = node.isCode ? node.nodeValue : self.escape(node.nodeValue);
+      } else if (node.nodeType === 1) {
+        replacement = replacementForNode.call(self, node);
+      }
+
+      return join(output, replacement)
+    }, '')
+  }
+
+  
+
+  function postProcess (output) {
+    var self = this;
+    this.rules.forEach(function (rule) {
+      if (typeof rule.append === 'function') {
+        output = join(output, rule.append(self.options));
+      }
+    });
+
+    return output.replace(/^[\t\r\n]+/, '').replace(/[\t\r\n\s]+$/, '')
+  }
+
+  
+
+  function replacementForNode (node) {
+    var rule = this.rules.forNode(node);
+    var content = process.call(this, node);
+    var whitespace = node.flankingWhitespace;
+    if (whitespace.leading || whitespace.trailing) content = content.trim();
+    return (
+      whitespace.leading +
+      rule.replacement(content, node, this.options) +
+      whitespace.trailing
+    )
+  }
+
+  
+
+  function join (output, replacement) {
+    var s1 = trimTrailingNewlines(output);
+    var s2 = trimLeadingNewlines(replacement);
+    var nls = Math.max(output.length - s1.length, replacement.length - s2.length);
+    var separator = '\n\n'.substring(0, nls);
+
+    return s1 + separator + s2
+  }
+
+  
+
+  function canConvert (input) {
+    return (
+      input != null && (
+        typeof input === 'string' ||
+        (input.nodeType && (
+          input.nodeType === 1 || input.nodeType === 9 || input.nodeType === 11
+        ))
+      )
+    )
+  }
+
+  return TurndownService;
+
+})));
+
+</script>
+</head>
+<body>
+<div class="note">
+  <div class="top-bar">
+    <div class="left-bar">
+      <button class="round-btn" id="newBtn">+</button>
+      <span>清枫速记</span>
+    </div>
+    <div class="btn-box">
+      <button class="theme-btn" id="themeBtn">&#x1F3A8;</button>
+      <button class="round-btn" id="saveBtn">&#x2750;</button>
+      <button class="round-btn" id="openBtn">&#x270E;</button>
+      <button class="round-btn" id="miniBtn">&#x2212;</button>
+      <button class="round-btn close" id="closeBtn">&#xD7;</button>
+    </div>
+  </div>
+  <div id="editor" contenteditable="true" spellcheck="false" tabindex="0"></div>
+  <div class="md-preview" id="mdPreview"></div>
+  <div class="clip-panel" id="clipPanel"></div>
+  <div class="todo-panel" id="todoPanel"></div>
+  <div class="blank-panel" id="blankPanel"></div>
+  <div class="tab-bar" id="tabBar"></div>
+  <div class="file-name-tip" id="fileNameTip"></div>
+</div>
+
+<script>
+const { invoke, convertFileSrc } = window.__TAURI__.core;
+const { listen } = window.__TAURI__.event;
+const { getCurrentWindow } = window.__TAURI__.window;
+
+const editor = document.getElementById('editor')
+const mdPreview = document.getElementById('mdPreview')
+const clipPanel = document.getElementById('clipPanel')
+const todoPanel = document.getElementById('todoPanel')
+const blankPanel = document.getElementById('blankPanel')
+const tabBar = document.getElementById('tabBar')
+const openBtn = document.getElementById('openBtn')
+const miniBtn = document.getElementById('miniBtn')
+const closeBtn = document.getElementById('closeBtn')
+const fileNameTip = document.getElementById('fileNameTip')
+const themeBtn = document.getElementById('themeBtn')
+const saveBtn = document.getElementById('saveBtn')
+const newBtn = document.getElementById('newBtn')
+const htmlRoot = document.documentElement
+const noteEl = document.querySelector('.note')
+
+
+mdPreview.addEventListener('click', function (e) {
+  const a = e.target.closest('a')
+  if (!a) return
+  const href = a.getAttribute('href') || ''
+  if (!/^https?:\/\//i.test(href)) return
+  e.preventDefault()
+  openExternal(href)
+})
+
+let tabList = [null, null]
+let activeTabIndex = 1
+const MAX_NOTE_TAB = 1
+const NOTE_TAB_START = 1
+const PREVIEW_INDEX = 2
+const BLANK_INDEX = 3
+const CLIP_INDEX = 4
+const TODO_INDEX = 5
+const defaultTitle = "清枫速记"
+let SAVE_DIR = ""
+const THEME_MAX = 6
+let currentTheme = 0
+let clipList = []
+let todoList = [{type:'undone',text:'找一个好用的便签'},{type:'undone',text:'站主自己的认证以及不同账号跳转的优化'},{type:'done',text:'二维码分享功能，扫码登陆，凭证文件登陆'},{type:'done',text:'增加可绑定平台'}]
+let quickData = { files: [], links: [] }
+let isClipOpen = false
+let reloadFlag = {}
+let keepAwakeActive = false
+
+let windowState = 1;
+let tabSwitchLock = false;
+let editorMode = 'edit';
+
+function renderMarkdown(text) {
+  try {
+    if (typeof marked !== 'undefined') {
+      marked.setOptions({
+        breaks: true,
+        gfm: true
+      })
+      const rawHtml = marked.parse(text || '')
+      if (typeof DOMPurify !== 'undefined') {
+        return DOMPurify.sanitize(rawHtml, { ADD_DATA_URI_TAGS: ['img'] })
+      }
+      return rawHtml
+    }
+  } catch (e) {
+    console.error('Markdown render error:', e)
+  }
+  return escapeHtml(text || '').replace(/\n/g, '<br>')
+}
+
+function updatePreview() {
+  if (editorMode === 'edit') return
+  mdPreview.innerHTML = renderMarkdown(editor.value)
+}
+
+function mdTextToEditorHtml(text) {
+  const escaped = (text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  
+  
+  
+  const withImgs = escaped.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
+    const isData = /^data:/i.test(src)
+    const dataAttr = isData ? ` data-base64="${src}"` : ''
+    return `<img src="${src}" alt="${alt}"${dataAttr} contenteditable="false">`
+  })
+  return withImgs.replace(/\n/g, '<br>')
+}
+
+function editorHtmlToMdText(html) {
+  const temp = document.createElement('div')
+  temp.innerHTML = html || ''
+  const imgs = temp.querySelectorAll('img')
+  imgs.forEach(img => {
+    const alt = img.getAttribute('alt') || ''
+    
+    const src = img.getAttribute('data-base64') || img.getAttribute('src') || ''
+    const textNode = document.createTextNode(`![${alt}](${src})`)
+    img.parentNode.replaceChild(textNode, img)
+  })
+  const brs = temp.querySelectorAll('br')
+  brs.forEach(br => {
+    br.parentNode.replaceChild(document.createTextNode('\n'), br)
+  })
+  const divs = temp.querySelectorAll('div, p')
+  divs.forEach(div => {
+    const text = div.textContent || ''
+    const textNode = document.createTextNode(text + '\n')
+    div.parentNode.replaceChild(textNode, div)
+  })
+  let result = temp.textContent || ''
+  result = result.replace(/\r/g, '')
+  if (result.endsWith('\n')) result = result.slice(0, -1)
+  return result
+}
+
+function setupEditorValueProxy() {
+  Object.defineProperty(editor, 'value', {
+    get: function() {
+      return editorHtmlToMdText(this.innerHTML)
+    },
+    set: function(text) {
+      this.innerHTML = mdTextToEditorHtml(text)
+    },
+    configurable: true
+  })
+}
+
+function setEditorMode(mode) {
+  editorMode = mode
+  if (mode === 'edit') {
+    editor.style.display = 'block'
+    mdPreview.style.display = 'none'
+  } else if (mode === 'preview') {
+    editor.style.display = 'none'
+    mdPreview.style.display = 'block'
+    updatePreview()
+  }
+}
+
+function cleanInvisibleText(str){
+  if(!str) return '';
+  return str
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, '');
+}
+function escapeHtml(str){
+  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+}
+
+function applyTheme(themeNum){
+  for(let i=0;i<THEME_MAX;i++) htmlRoot.classList.remove(`theme${i}`)
+  htmlRoot.classList.add(`theme${themeNum}`)
+  currentTheme = themeNum
+  invoke('sync_theme', { theme: themeNum })
+}
+themeBtn.addEventListener('click',()=>{
+  let next = currentTheme + 1
+  if(next >= THEME_MAX) next = 0
+  applyTheme(next)
+})
+
+function getTimeFileName(){
+  const d = new Date()
+  const Y = d.getFullYear()
+  const M = String(d.getMonth()+1).padStart(2,'0')
+  const D = String(d.getDate()).padStart(2,'0')
+  const h = String(d.getHours()).padStart(2,'0')
+  const m = String(d.getMinutes()).padStart(2,'0')
+  const s = String(d.getSeconds()).padStart(2,'0')
+  return `${Y}${M}${D}_${h}${m}${s}.md`
+}
+
+function getPureWordCount(){
+  const text = editor.value || ""
+  return text.replace(/!\[.*?\]\(.*?\)/g, "").replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g,"").length
+}
+
+function updateWordCount(){
+  if(isClipOpen){
+    fileNameTip.textContent = ""
+    return
+  }
+  const count = getPureWordCount()
+  const curr = tabList[NOTE_TAB_START]
+  let nameStr = curr ? curr.fileName.replace('.md','') : ""
+  fileNameTip.textContent = `字数:${count} | ${nameStr}`
+}
+
+function moveCursorToEndAndFocus() {
+  editor.focus()
+  const range = document.createRange()
+  range.selectNodeContents(editor)
+  range.collapse(false)
+  const sel = window.getSelection()
+  sel.removeAllRanges()
+  sel.addRange(range)
+  editor.scrollTop = editor.scrollHeight
+}
+
+function moveCursorToTop(){
+  editor.focus()
+  const range = document.createRange()
+  range.selectNodeContents(editor)
+  range.collapse(true)
+  const sel = window.getSelection()
+  sel.removeAllRanges()
+  sel.addRange(range)
+  editor.scrollTop = 0
+}
+
+function renderTabBar(){
+  tabBar.innerHTML = ""
+  
+  const editTab = document.createElement('div')
+  editTab.className = "tab-item"
+  editTab.textContent = "1"
+  editTab.dataset.num = NOTE_TAB_START
+  if(tabList[NOTE_TAB_START]) editTab.classList.add('has_content')
+  else editTab.classList.add('empty')
+  if(!isClipOpen && activeTabIndex === NOTE_TAB_START) editTab.classList.add('active')
+  editTab.onclick = async ()=>{
+    await saveAllTabs()
+    await hotkeySwitchTab(NOTE_TAB_START)
+  }
+  tabBar.appendChild(editTab)
+  
+  const previewTab = document.createElement('div')
+  previewTab.className = "tab-item clip"
+  previewTab.textContent = "预览"
+  previewTab.dataset.num = PREVIEW_INDEX
+  if(isClipOpen && activeTabIndex === PREVIEW_INDEX) previewTab.classList.add('active')
+  previewTab.onclick = async ()=>{
+    await saveAllTabs()
+    await hotkeySwitchTab(PREVIEW_INDEX)
+  }
+  tabBar.appendChild(previewTab)
+  
+  const blankTab = document.createElement('div')
+  blankTab.className = "tab-item clip"
+  blankTab.textContent = "快捷"
+  blankTab.dataset.num = BLANK_INDEX
+  if(isClipOpen && activeTabIndex === BLANK_INDEX) blankTab.classList.add('active')
+  blankTab.onclick = async ()=>{
+    await saveAllTabs()
+    await hotkeySwitchTab(BLANK_INDEX)
+  }
+  tabBar.appendChild(blankTab)
+  
+  const clipTab = document.createElement('div')
+  clipTab.className = "tab-item clip"
+  clipTab.textContent = "剪贴板"
+  clipTab.dataset.num = CLIP_INDEX
+  if(isClipOpen && activeTabIndex === CLIP_INDEX) clipTab.classList.add('active')
+  clipTab.onclick = async ()=>{
+    await saveAllTabs()
+    await hotkeySwitchTab(CLIP_INDEX)
+  }
+  tabBar.appendChild(clipTab)
+  
+  const todoTab = document.createElement('div')
+  todoTab.className = "tab-item clip"
+  todoTab.textContent = "待办清单"
+  todoTab.dataset.num = TODO_INDEX
+  if(isClipOpen && activeTabIndex === TODO_INDEX) todoTab.classList.add('active')
+  todoTab.onclick = async ()=>{
+    await saveAllTabs()
+    await hotkeySwitchTab(TODO_INDEX)
+  }
+  tabBar.appendChild(todoTab)
+  updateWordCount()
+}
+
+async function switchClipPanel(){
+  if(tabList[NOTE_TAB_START]) await saveAllTabs();
+  if(!isClipOpen && tabList[NOTE_TAB_START]) tabList[NOTE_TAB_START].content = editor.value
+  isClipOpen = true
+  activeTabIndex = CLIP_INDEX
+  editor.style.display = "none"
+  mdPreview.style.display = "none"
+  todoPanel.classList.remove('show')
+  blankPanel.classList.remove('show')
+  clipPanel.classList.add('show')
+  renderClipList()
+  renderTabBar()
+  fileNameTip.textContent = ""
+  invoke('set_win_title', { title: "清枫速记 - 剪贴板" })
+}
+async function switchTodoPanel(){
+  if(tabList[NOTE_TAB_START]) await saveAllTabs();
+  if(!isClipOpen && tabList[NOTE_TAB_START]) tabList[NOTE_TAB_START].content = editor.value
+  isClipOpen = true
+  activeTabIndex = TODO_INDEX
+  editor.style.display = "none"
+  mdPreview.style.display = "none"
+  clipPanel.classList.remove('show')
+  blankPanel.classList.remove('show')
+  todoPanel.classList.add('show')
+  renderTodoList()
+  renderTabBar()
+  fileNameTip.textContent = ""
+  invoke('set_win_title', { title: "清枫速记 - 待办清单" })
+}
+async function switchBlankPanel(){
+  if(tabList[NOTE_TAB_START]) await saveAllTabs();
+  if(!isClipOpen && tabList[NOTE_TAB_START]) tabList[NOTE_TAB_START].content = editor.value
+  isClipOpen = true
+  activeTabIndex = BLANK_INDEX
+  editor.style.display = "none"
+  mdPreview.style.display = "none"
+  clipPanel.classList.remove('show')
+  todoPanel.classList.remove('show')
+  blankPanel.classList.add('show')
+  renderQuickPanel()
+  renderTabBar()
+  fileNameTip.textContent = ""
+  invoke('set_win_title', { title: "清枫速记 - 快捷" })
+}
+async function switchToPreview(){
+  if(tabList[NOTE_TAB_START]) await saveAllTabs();
+  if(!isClipOpen && tabList[NOTE_TAB_START]) tabList[NOTE_TAB_START].content = editor.value
+  isClipOpen = true
+  activeTabIndex = PREVIEW_INDEX
+  editorMode = 'preview'
+  editor.style.display = "none"
+  clipPanel.classList.remove('show')
+  todoPanel.classList.remove('show')
+  blankPanel.classList.remove('show')
+  clipPanel.innerHTML = ""
+  todoPanel.innerHTML = ""
+  blankPanel.innerHTML = ""
+  mdPreview.style.display = 'block'
+  updatePreview()
+  renderTabBar()
+  fileNameTip.textContent = ""
+  invoke('set_win_title', { title: "清枫速记 - 预览" })
+}
+function switchEditorPanel(){
+  isClipOpen = false
+  clipPanel.classList.remove('show')
+  todoPanel.classList.remove('show')
+  blankPanel.classList.remove('show')
+  clipPanel.innerHTML = ""
+  todoPanel.innerHTML = ""
+  blankPanel.innerHTML = ""
+  editorMode = 'edit'
+  mdPreview.style.display = 'none'
+  editor.style.display = 'block'
+  activeTabIndex = NOTE_TAB_START
+  if (tabList[NOTE_TAB_START]) {
+    editor.value = tabList[NOTE_TAB_START].content
+  }
+  cleanEditorHtml()
+  renderTabBar()
+  updateTitle(tabList[NOTE_TAB_START]?.fileName)
+  moveCursorToEndAndFocus()
+}
+
+async function getClipboardText() {
+  try {
+    return await invoke('read_clip_text');
+  } catch {
+    return "";
+  }
+}
+
+async function setClipboardText(text) {
+  try {
+    await invoke('write_clip_text', { text });
+  } catch {}
+}
+
+function renderClipList(){
+  clipPanel.innerHTML = ""
+  if(clipList.length === 0){
+    clipPanel.innerHTML = `<div class="clip-empty">暂无复制文本记录</div>`
+    return
+  }
+  clipList.forEach(item=>{
+    const div = document.createElement('div')
+    div.className = "clip-item"
+    div.innerHTML = `
+      <div class="clip-text">${escapeHtml(item.text)}</div>
+      <div class="clip-time">${item.time}</div>
+    `
+    div.onclick = ()=> setClipboardText(item.text)
+    clipPanel.appendChild(div)
+  })
+}
+function createNewTodo(){
+  const newItem = {type:'undone',text:'新建待办'}
+  todoList.unshift(newItem)
+  saveTodoList()
+  renderTodoList()
+  setTimeout(()=>{
+    const firstTodoText = todoPanel.querySelector('.todo-text')
+    if(firstTodoText) {
+      firstTodoText.focus()
+      const range = document.createRange()
+      range.selectNodeContents(firstTodoText)
+      range.collapse(false)
+      const sel = window.getSelection()
+      sel.removeAllRanges()
+      sel.addRange(range)
+    }
+  }, 50)
+}
+function renderTodoList(){
+  todoPanel.innerHTML = ""
+  const undone = todoList.filter(i=>i.type==='undone')
+  const done = todoList.filter(i=>i.type==='done')
+  if(undone.length>0){
+    const g1 = document.createElement('div')
+    g1.className = 'todo-group-title'
+    g1.textContent = '待完成'
+    todoPanel.appendChild(g1)
+    undone.forEach((item)=>{
+      const idx = todoList.indexOf(item)
+      const wrap = document.createElement('div')
+      wrap.className = 'todo-item'
+      wrap.dataset.type = 'undone'
+      wrap.dataset.idx = idx
+      const textDiv = document.createElement('div')
+      textDiv.className = 'todo-text'
+      textDiv.contentEditable = true
+      textDiv.textContent = item.text
+      textDiv.onblur = ()=>{
+        const newText = textDiv.textContent.trim()
+        if(newText) {
+          todoList[idx].text = newText
+          saveTodoList()
+        }
+      }
+      textDiv.onkeydown = (e)=>{
+        if(e.key === 'Enter') {
+          e.preventDefault()
+          textDiv.blur()
+        }
+      }
+      wrap.innerHTML = `
+        <span class="todo-check"></span>
+        <span class="todo-del">删除</span>
+      `
+      wrap.insertBefore(textDiv, wrap.querySelector('.todo-del'))
+      const ck = wrap.querySelector('.todo-check')
+      const del = wrap.querySelector('.todo-del')
+      ck.onclick=(e)=>{
+        e.stopPropagation()
+        todoList[idx].type='done'
+        saveTodoList()
+        renderTodoList()
+      }
+      del.onclick=(e)=>{
+        e.stopPropagation()
+        todoList.splice(idx,1)
+        saveTodoList()
+        renderTodoList()
+      }
+      todoPanel.appendChild(wrap)
+    })
+  }
+  if(done.length>0){
+    const g2 = document.createElement('div')
+    g2.className = 'todo-group-title'
+    g2.textContent = '已完成'
+    todoPanel.appendChild(g2)
+    done.forEach((item)=>{
+      const idx = todoList.indexOf(item)
+      const wrap = document.createElement('div')
+      wrap.className = 'todo-item'
+      wrap.dataset.type = 'done'
+      wrap.dataset.idx = idx
+      const textDiv = document.createElement('div')
+      textDiv.className = 'todo-text'
+      textDiv.contentEditable = true
+      textDiv.textContent = item.text
+      textDiv.style.textDecoration = 'line-through'
+      textDiv.style.opacity = '0.7'
+      textDiv.onblur = ()=>{
+        const newText = textDiv.textContent.trim()
+        if(newText) {
+          todoList[idx].text = newText
+          saveTodoList()
+        }
+      }
+      textDiv.onkeydown = (e)=>{
+        if(e.key === 'Enter') {
+          e.preventDefault()
+          textDiv.blur()
+        }
+      }
+      wrap.innerHTML = `
+        <span class="todo-check checked">&#x2713;</span>
+        <span class="todo-del">删除</span>
+      `
+      wrap.insertBefore(textDiv, wrap.querySelector('.todo-del'))
+      const ck = wrap.querySelector('.todo-check')
+      const del = wrap.querySelector('.todo-del')
+      ck.onclick=(e)=>{
+        e.stopPropagation()
+        todoList[idx].type='undone'
+        saveTodoList()
+        renderTodoList()
+      }
+      del.onclick=(e)=>{
+        e.stopPropagation()
+        todoList.splice(idx,1)
+        saveTodoList()
+        renderTodoList()
+      }
+      todoPanel.appendChild(wrap)
+    })
+  }
+  if(todoList.length===0){
+    todoPanel.innerHTML = `<div class="clip-empty">暂无待办任务</div>`
+  }
+}
+async function saveTodoList(){
+  await invoke('save_task_list', { list: todoList })
+}
+
+async function openPath(filePath) {
+  try {
+    
+    let cleanPath = filePath
+    if (cleanPath.toLowerCase().endsWith('.lnk')) {
+      
+      try {
+        const resolved = await invoke('resolve_lnk', { path: cleanPath })
+        if (resolved) {
+          cleanPath = resolved
+        }
+      } catch {}
+    }
+
+    
+    await showBallForDialog()
+    await invoke('open_path', { path: cleanPath })
+    await restoreFromDialog()
+  } catch {}
+}
+
+async function openExternal(url) {
+  try {
+    await invoke('open_external', { url });
+  } catch {}
+}
+
+async function getFileIcon(filePath) {
+  try {
+    return await invoke('get_file_icon', { path: filePath });
+  } catch {
+    return null;
+  }
+}
+
+async function handleDropFiles(paths, names) {
+  const newFiles = []
+  for(let i = 0; i < paths.length; i++){
+    const path = paths[i]
+    const name = names && names[i] ? names[i] : path.split(/[\\/]/).pop()
+    if (!path || !name) continue
+    const exist = quickData.files.find(f => f.path === path)
+    if(exist) continue
+    newFiles.push({
+      name: name,
+      path: path,
+      icon: null,
+      id: Date.now() + '_' + Math.random().toString(36).substr(2, 9) + '_' + i
+    })
+  }
+  if(newFiles.length === 0) return
+
+  quickData.files = quickData.files.concat(newFiles)
+  saveQuickData()
+  renderQuickPanel()
+
+  for(const f of newFiles){
+    try {
+      const icon = await getFileIcon(f.path)
+      if(icon){
+        const item = quickData.files.find(x => x.id === f.id)
+        if(item){
+          item.icon = icon
+          saveQuickData()
+          renderQuickPanel()
+        }
+      }
+    } catch {}
+  }
+}
+
+function renderQuickPanel(){
+  blankPanel.innerHTML = ""
+
+  const keepAwakeBar = document.createElement('div')
+  keepAwakeBar.className = 'keep-awake-bar'
+  const keepAwakeBtn = document.createElement('button')
+  keepAwakeBtn.className = 'keep-awake-btn'
+  keepAwakeBtn.textContent = keepAwakeActive ? '● 屏幕保活中' : '○ 屏幕保活'
+  keepAwakeBtn.title = '点击开启/取消屏幕保活'
+  if(keepAwakeActive) keepAwakeBtn.classList.add('active')
+  keepAwakeBtn.onclick = async () => {
+    try {
+      const active = await invoke('toggle_keep_awake')
+      keepAwakeActive = active
+      keepAwakeBtn.textContent = active ? '● 屏幕保活中' : '○ 屏幕保活'
+      if(active) keepAwakeBtn.classList.add('active')
+      else keepAwakeBtn.classList.remove('active')
+    } catch(e) {
+      alert('操作失败：' + e)
+    }
+  }
+  keepAwakeBar.appendChild(keepAwakeBtn)
+  blankPanel.appendChild(keepAwakeBar)
+
+  const fileSection = document.createElement('div')
+  fileSection.className = 'quick-section'
+  const fileTitleRow = document.createElement('div')
+  fileTitleRow.className = 'quick-title-row'
+  const fileTitle = document.createElement('div')
+  fileTitle.className = 'quick-title'
+  fileTitle.textContent = '文件'
+  const fileDropToggle = document.createElement('button')
+  fileDropToggle.className = 'quick-add-btn'
+  fileDropToggle.textContent = '＋上传'
+  fileDropToggle.title = '上传文件或文件夹'
+  fileDropToggle.onclick = async () => {
+    const menu = document.createElement('div')
+    menu.className = 'quick-upload-menu'
+    menu.innerHTML = `
+      <div class="quick-upload-item" data-type="files">选择文件</div>
+      <div class="quick-upload-item" data-type="folder">选择文件夹</div>
+    `
+    const rect = fileDropToggle.getBoundingClientRect()
+    menu.style.position = 'fixed'
+    menu.style.top = (rect.bottom + 4) + 'px'
+    menu.style.right = (window.innerWidth - rect.right) + 'px'
+    menu.style.zIndex = '9999'
+    document.body.appendChild(menu)
+
+    const closeMenu = () => { menu.remove() }
+    setTimeout(() => {
+      document.addEventListener('click', function onClick(e) {
+        if (!menu.contains(e.target)) {
+          closeMenu()
+          document.removeEventListener('click', onClick)
+        }
+      })
+    }, 0)
+
+    menu.querySelectorAll('.quick-upload-item').forEach(item => {
+      item.onclick = async () => {
+        const type = item.dataset.type
+        closeMenu()
+        try {
+          if (type === 'files') {
+            const result = await invoke('pick_files_dialog')
+            if (result && result.length > 0) {
+              const names = result.map(p => p.split(/[\\/]/).pop())
+              handleDropFiles(result, names)
+            }
+          } else {
+            const result = await invoke('pick_folder_dialog')
+            if (result) {
+              const name = result.split(/[\\/]/).pop()
+              handleDropFiles([result], [name])
+            }
+          }
+        } catch (e) {}
+      }
+    })
+  }
+  fileTitleRow.appendChild(fileTitle)
+  fileTitleRow.appendChild(fileDropToggle)
+  fileSection.appendChild(fileTitleRow)
+
+  const fileGrid = document.createElement('div')
+  fileGrid.className = 'quick-grid'
+  if(quickData.files.length === 0){
+    const empty = document.createElement('div')
+    empty.className = 'quick-empty'
+    empty.textContent = '拖拽文件到此处'
+    fileGrid.appendChild(empty)
+  } else {
+    quickData.files.forEach((file) => {
+      const item = document.createElement('div')
+      item.className = 'quick-item'
+      item.title = file.name || '未知文件'
+
+      const icon = document.createElement('div')
+      icon.className = 'quick-icon'
+      if(file.icon) {
+        const img = document.createElement('img')
+        img.src = file.icon
+        img.onerror = () => {
+          icon.innerHTML = '<span>&#x1F4C4;</span>'
+        }
+        icon.innerHTML = ''
+        icon.appendChild(img)
+      } else {
+        icon.innerHTML = `<span>&#x1F4C4;</span>`
+      }
+
+      const name = document.createElement('div')
+      name.className = 'quick-name'
+      name.textContent = file.name || '未知文件'
+
+      item.appendChild(icon)
+      item.appendChild(name)
+
+      item.ondblclick = () => {
+        if (file.path) openPath(file.path)
+      }
+
+      item.oncontextmenu = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        showFileContextMenu(e.clientX, e.clientY, file)
+      }
+
+      const del = document.createElement('span')
+      del.className = 'quick-del'
+      del.textContent = '×'
+      del.onclick = (e) => {
+        e.stopPropagation()
+        quickData.files = quickData.files.filter(f => f.id !== file.id)
+        saveQuickData()
+        renderQuickPanel()
+      }
+      del.ondblclick = (e) => {
+        e.stopPropagation()
+        e.preventDefault()
+      }
+      item.appendChild(del)
+
+      fileGrid.appendChild(item)
+    })
+  }
+  fileSection.appendChild(fileGrid)
+  blankPanel.appendChild(fileSection)
+
+  const linkSection = document.createElement('div')
+  linkSection.className = 'quick-section'
+  const linkTitleRow = document.createElement('div')
+  linkTitleRow.className = 'quick-title-row'
+  const linkTitle = document.createElement('div')
+  linkTitle.className = 'quick-title'
+  linkTitle.textContent = '链接'
+  const addLinkBtn = document.createElement('button')
+addLinkBtn.className = 'quick-add-btn'
+addLinkBtn.textContent = '+添加'
+addLinkBtn.onclick = async () => {
+  const txt = await getClipboardText()
+  addLinksFromText(txt)
+}
+  linkTitleRow.appendChild(linkTitle)
+  linkTitleRow.appendChild(addLinkBtn)
+  linkSection.appendChild(linkTitleRow)
+
+  const linkGrid = document.createElement('div')
+  linkGrid.className = 'quick-grid'
+  if(quickData.links.length === 0){
+    const empty = document.createElement('div')
+    empty.className = 'quick-empty'
+    empty.textContent = '暂无链接'
+    linkGrid.appendChild(empty)
+  } else {
+    quickData.links.forEach((link) => {
+      const item = document.createElement('div')
+      item.className = 'quick-item'
+      item.draggable = true
+      item.title = link.url || '未知链接'
+
+      const icon = document.createElement('div')
+      icon.className = 'quick-icon'
+      icon.innerHTML = `<span>&#x1F517;</span>`
+
+      const name = document.createElement('div')
+      name.className = 'quick-name'
+      name.textContent = link.name || link.url || '未知链接'
+
+      item.appendChild(icon)
+      item.appendChild(name)
+
+      item.ondblclick = () => {
+        if (link.url) openExternal(link.url)
+      }
+
+      item.ondragstart = (e) => {
+        triggerDragMinimize()
+        e.dataTransfer.effectAllowed = 'copy'
+        e.dataTransfer.setData('text/plain', link.url || '')
+      }
+
+      const del = document.createElement('span')
+      del.className = 'quick-del'
+      del.textContent = '×'
+      del.onclick = (e) => {
+        e.stopPropagation()
+        quickData.links = quickData.links.filter(l => l.id !== link.id)
+        saveQuickData()
+        renderQuickPanel()
+      }
+      del.ondblclick = (e) => {
+        e.stopPropagation()
+        e.preventDefault()
+      }
+      item.appendChild(del)
+
+      linkGrid.appendChild(item)
+    })
+  }
+  linkSection.appendChild(linkGrid)
+  blankPanel.appendChild(linkSection)
+
+  blankPanel.ondragover = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    e.dataTransfer.dropEffect = 'copy'
+  }
+
+  blankPanel.ondrop = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if(e.dataTransfer.files.length > 0 && !fileDropMode){
+      const paths = []
+      const names = []
+      for(const file of e.dataTransfer.files){
+        if (!file) continue
+        let path = file.path
+        if (!path && file.webkitRelativePath) {
+          path = file.webkitRelativePath
+        }
+        if (!path) {
+          continue
+        }
+        paths.push(path)
+        names.push(file.name)
+      }
+      if (paths.length > 0) {
+        handleDropFiles(paths, names)
+        return
+      }
+    }
+    const text = (e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain')).trim()
+    if (text) {
+      addLinksFromText(text)
+    }
+  }
+}
+function addLinksFromText(text) {
+  if (!text || !text.trim()) return 0
+  const urlRegex = /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+)/gi
+  const urls = text.match(urlRegex)
+  if (!urls || urls.length === 0) return 0
+  let added = 0
+  for (const url of urls) {
+    let cleanUrl = url
+    if (cleanUrl.toLowerCase().startsWith('www.')) {
+      cleanUrl = 'https://' + cleanUrl
+    }
+    const exist = quickData.links.find(l => l.url === cleanUrl)
+    if (exist) continue
+    quickData.links.push({
+      url: cleanUrl,
+      name: cleanUrl,
+      id: Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+    })
+    added++
+  }
+  if (added > 0) {
+    saveQuickData()
+    renderQuickPanel()
+  }
+  return added
+}
+
+async function saveQuickData(){
+  try {
+    const cleanData = {
+      files: quickData.files.map(f => ({
+        name: f.name,
+        path: f.path,
+        icon: f.icon || null,
+        id: f.id
+      })),
+      links: quickData.links.map(l => ({
+        name: l.name,
+        url: l.url,
+        id: l.id
+      }))
+    }
+    await invoke('save_quick_list', { data: cleanData })
+  } catch(e) {
+    console.error('saveQuickData error:', e)
+  }
+}
+
+let currentContextMenu = null
+
+function hideContextMenu() {
+  if (currentContextMenu) {
+    currentContextMenu.remove()
+    currentContextMenu = null
+  }
+}
+
+function showFileContextMenu(x, y, file) {
+  hideContextMenu()
+
+  const menu = document.createElement('div')
+  menu.className = 'context-menu'
+
+  const copyItem = document.createElement('div')
+  copyItem.className = 'context-menu-item'
+  copyItem.textContent = '复制文件'
+  copyItem.onclick = async () => {
+    hideContextMenu()
+    if (file.path) {
+      try {
+        await invoke('copy_file_to_clipboard', { path: file.path })
+      } catch (err) {
+        console.error('Copy file error:', err)
+      }
+    }
+  }
+  menu.appendChild(copyItem)
+
+  const openItem = document.createElement('div')
+  openItem.className = 'context-menu-item'
+  openItem.textContent = '打开文件'
+  openItem.onclick = () => {
+    hideContextMenu()
+    if (file.path) openPath(file.path)
+  }
+  menu.appendChild(openItem)
+
+  const openFolderItem = document.createElement('div')
+  openFolderItem.className = 'context-menu-item'
+  openFolderItem.textContent = '打开文件夹位置'
+  openFolderItem.onclick = () => {
+    hideContextMenu()
+    if (file.path) {
+      invoke('open_file_location', { path: file.path }).catch(() => {})
+    }
+  }
+  menu.appendChild(openFolderItem)
+
+  const deleteItem = document.createElement('div')
+  deleteItem.className = 'context-menu-item'
+  deleteItem.textContent = '删除'
+  deleteItem.onclick = (e) => {
+    hideContextMenu()
+    quickData.files = quickData.files.filter(f => f.id !== file.id)
+    saveQuickData()
+    renderQuickPanel()
+  }
+  menu.appendChild(deleteItem)
+
+  menu.style.left = x + 'px'
+  menu.style.top = y + 'px'
+
+  document.body.appendChild(menu)
+  currentContextMenu = menu
+}
+
+document.addEventListener('click', hideContextMenu)
+document.addEventListener('contextmenu', (e) => {
+  if (currentContextMenu && !currentContextMenu.contains(e.target)) {
+    hideContextMenu()
+  }
+})
+
+function updateTitle(name){
+  if(isClipOpen) return
+  const pureName = name ? name.replace('.md','') : ""
+  const titleText = pureName ? `${defaultTitle} - ${pureName}` : defaultTitle
+  invoke('set_win_title', { title: titleText })
+}
+
+window.saveAllTabs = async function(){
+  if(tabList[NOTE_TAB_START]){
+    if(!isClipOpen) tabList[NOTE_TAB_START].content = editor.value
+    await invoke('save_note', { content: tabList[NOTE_TAB_START].content, filePath: tabList[NOTE_TAB_START].filePath })
+  }
+}
+
+window.saveCurrentTab = async function(){
+  const curr = tabList[NOTE_TAB_START]
+  if(!curr || isClipOpen) return
+  curr.content = editor.value
+  await invoke('save_note', { content: curr.content, filePath: curr.filePath })
+}
+
+async function reloadCurrentFileNoSave(){
+  const curr = tabList[NOTE_TAB_START]
+  if(!curr) return
+  try{
+    const content = await invoke('read_file', { path: curr.filePath })
+    editor.value = content || ""
+    updateWordCount()
+    moveCursorToEndAndFocus()
+  }catch(e){
+    alert("文件读取失败")
+  }
+}
+
+async function exportCurrentNote(){
+  const curr = tabList[NOTE_TAB_START]
+  if(!curr || isClipOpen) return
+  const baseName = curr.fileName.replace('.md', '')
+  const selectPath = await callDialogWithRestore(() => invoke('select_folder_dialog'))
+  if(!selectPath) return
+  const outDir = selectPath + '/' + baseName
+  try {
+    const result = await invoke('export_note_with_images', {
+      content: editor.value || "",
+      outDir: outDir,
+      baseName: baseName
+    })
+    alert(`导出完成！\n目录：${outDir}\n含Markdown文件 + images图片文件夹`)
+  } catch(e) {
+    alert(`导出失败：${e}`)
+  }
+}
+
+async function hotkeySwitchTab(num){
+  if(num === TODO_INDEX){
+    await switchTodoPanel()
+    invoke('tab_change', { tabIndex: TODO_INDEX })
+    return
+  }
+  if(num === CLIP_INDEX){
+    await switchClipPanel()
+    invoke('tab_change', { tabIndex: CLIP_INDEX })
+    return
+  }
+  if(num === BLANK_INDEX){
+    await switchBlankPanel()
+    invoke('tab_change', { tabIndex: BLANK_INDEX })
+    return
+  }
+  if(num === PREVIEW_INDEX){
+    await switchToPreview()
+    invoke('tab_change', { tabIndex: PREVIEW_INDEX })
+    return
+  }
+  if(num === NOTE_TAB_START){
+    if(isClipOpen){
+      switchEditorPanel()
+    }
+    invoke('tab_change', { tabIndex: NOTE_TAB_START })
+    return
+  }
+}
+
+async function openFileNewTab(){
+  if(isClipOpen) return
+  await saveAllTabs();
+  const fileData = await callDialogWithRestore(() => invoke('open_file_dialog'))
+  if(!fileData) return;
+  const nextTheme = (currentTheme + 1) % THEME_MAX
+  await invoke('launch_new_instance', { filePath: fileData.filePath, theme: nextTheme })
+}
+
+async function createNewTab(){
+  if(isClipOpen) return
+  await saveAllTabs();
+  const newName = getTimeFileName();
+  const fullPath = SAVE_DIR + '/' + newName;
+  await invoke('save_note', { content: "", filePath: fullPath });
+  const nextTheme = (currentTheme + 1) % THEME_MAX
+  await invoke('launch_new_instance', { filePath: fullPath, theme: nextTheme })
+}
+
+async function loadFileByPath(filePath){
+  const fileName = filePath.split('/').pop().split('\\').pop()
+  const content = await invoke('read_file', { path: filePath })
+
+  tabList[NOTE_TAB_START] = {
+    filePath: filePath,
+    fileName: fileName,
+    content: content
+  }
+  activeTabIndex = NOTE_TAB_START
+  isClipOpen = false
+  editorMode = 'edit'
+  editor.style.display = 'block'
+  mdPreview.style.display = 'none'
+  clipPanel.classList.remove('show')
+  todoPanel.classList.remove('show')
+  blankPanel.classList.remove('show')
+  invoke('tab_change', { tabIndex: activeTabIndex })
+  setTimeout(()=>{
+    editor.value = content
+    updateTitle(fileName)
+    updateWordCount()
+    updatePreview()
+    renderTabBar()
+    cleanEditorHtml()
+    moveCursorToEndAndFocus()
+  }, 80)
+}
+
+window.addEventListener('DOMContentLoaded', async ()=>{
+  try {
+    
+    const t = await invoke('render_ready')
+    if (typeof t === 'number') {
+      currentTheme = t
+      for (let i = 0; i < THEME_MAX; i++) document.documentElement.classList.remove(`theme${i}`)
+      document.documentElement.classList.add(`theme${t}`)
+    }
+  } catch (e) {
+    console.error('render_ready failed:', e)
+  }
+})
+
+listen('open-external-file', async (event) => {
+  await loadFileByPath(event.payload)
+})
+
+listen('win32-file-drop', (event) => {
+  const paths = event.payload
+  if (!paths || !paths.length) return
+  if (activeTabIndex === BLANK_INDEX) {
+    const names = paths.map(p => p.split(/[\\/]/).pop())
+    handleDropFiles(paths, names)
+  }
+})
+
+listen('insert-screenshot', (event) => {
+  const imgBase64 = event.payload
+  if (!imgBase64) return
+  if (isClipOpen) return
+  if (activeTabIndex !== NOTE_TAB_START || editorMode !== 'edit') {
+    if (isClipOpen) return
+    if (activeTabIndex === PREVIEW_INDEX) {
+      switchEditorPanel()
+    }
+  }
+  setTimeout(() => {
+    insertImageAtCursor(imgBase64)
+    setTimeout(ensureEditorFocus, 30)
+  }, 80)
+})
+
+listen('trigger-screenshot', async () => {
+  if (isClipOpen) return
+  const base64 = await invoke('capture_screen')
+  if (!base64) return
+  insertImageAtCursor(base64)
+})
+
+listen('file-drop', async (event) => {
+  const data = event.payload
+  const paths = Array.isArray(data) && Array.isArray(data[0]) ? data[0] : (data.paths || data)
+
+  if (isClipOpen && activeTabIndex === BLANK_INDEX) {
+    const nameList = Array.isArray(paths) ? paths.map(p => {
+      const parts = p.split(/[\\/]/)
+      return parts[parts.length - 1]
+    }) : []
+    handleDropFiles(paths, nameList)
+    return
+  }
+
+  if (!isClipOpen) {
+    handleFileDrop(paths)
+  }
+})
+
+
+function ensureEditorFocusRange() {
+  editor.focus()
+  const sel = window.getSelection()
+  if (!sel || sel.rangeCount === 0 ||
+      (sel.anchorNode && sel.anchorNode !== editor && !editor.contains(sel.anchorNode))) {
+    const range = document.createRange()
+    range.selectNodeContents(editor)
+    range.collapse(false)
+    sel.removeAllRanges()
+    sel.addRange(range)
+  }
+}
+
+
+
+
+function insertHtmlAtCursor(html) {
+  ensureEditorFocusRange()
+  const sel = window.getSelection()
+  const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null
+  try {
+    const ok = document.execCommand('insertHTML', false, html)
+    if (!ok && range) {
+      const tmp = document.createElement('div'); tmp.innerHTML = html
+      const frag = document.createDocumentFragment()
+      while (tmp.firstChild) frag.appendChild(tmp.firstChild)
+      range.insertNode(frag)
+    }
+  } catch (e) {
+    if (range) {
+      const tmp = document.createElement('div'); tmp.innerHTML = html
+      const frag = document.createDocumentFragment()
+      while (tmp.firstChild) frag.appendChild(tmp.firstChild)
+      range.insertNode(frag)
+    }
+  }
+  updateWordCount()
+  ensureEditorFocusRange()
+}
+
+function insertTextAtCursor(text) {
+  
+  const html = escapeHtml(text || '').replace(/\r/g, '').replace(/\n/g, '<br>')
+  insertHtmlAtCursor(html)
+}
+
+function insertImageAtCursor(imgBase64) {
+  
+  
+  const imgHtml = `<br><img src="${imgBase64}" alt="图片" data-base64="${imgBase64}" contenteditable="false">`
+  insertHtmlAtCursor(imgHtml)
+}
+
+function insertImageAtCursorByPath(imgPath, imgName) {
+  const alt = (imgName || '图片')
+  const safeSrc = escapeHtml(imgPath || '').replace(/"/g, '&quot;')
+  const safeAlt = escapeHtml(alt).replace(/"/g, '&quot;')
+  
+  insertHtmlAtCursor(`<br><img src="${safeSrc}" alt="${safeAlt}" contenteditable="false">`)
+}
+
+listen('clip-add', (event) => {
+  const item = event.payload
+  
+  if (clipList.length && clipList[0].text === item.text && clipList[0].time === item.time) return
+  clipList.unshift(item)
+  
+  if (clipList.length > 20) {
+    clipList.pop()
+    const last = clipPanel.lastElementChild
+    if (last) last.remove()
+  }
+  const emptyEl = clipPanel.querySelector('.clip-empty')
+  if (emptyEl) emptyEl.remove()
+  const div = document.createElement('div')
+  div.className = "clip-item"
+  div.innerHTML = `<div class="clip-text">${escapeHtml(item.text)}</div><div class="clip-time">${item.time}</div>`
+  div.onclick = ()=> setClipboardText(item.text)
+  clipPanel.insertBefore(div, clipPanel.firstChild)
+})
+
+listen('sync-theme', (event) => {
+  const num = event.payload
+  currentTheme = num
+  document.documentElement.className = `theme${currentTheme}`
+})
+
+listen('init-theme', (event) => {
+  const num = event.payload
+  currentTheme = num
+  document.documentElement.className = `theme${currentTheme}`
+})
+
+
+document.addEventListener('contextmenu', (e) => {
+  const target = e.target
+  
+  let isQuickItem = false
+  let current = target
+  while (current && current !== document.body) {
+    if (current.classList && (current.classList.contains('quick-item') || current.classList.contains('context-menu'))) {
+      isQuickItem = true
+      break
+    }
+    current = current.parentElement
+  }
+  
+  
+  if (!isQuickItem) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+})
+
+listen('drag-out', () => {
+  if(windowState === 1){
+    windowState = 2;
+    invoke('to_ball')
+  }
+})
+
+listen('drag-end', () => {
+  if(windowState === 2){
+    windowState = 1;
+    invoke('to_main')
+  }
+})
+
+function handleFileDrop(paths) {
+  if (!paths || paths.length === 0) return
+
+  if (isClipOpen && activeTabIndex === BLANK_INDEX) {
+    const newFiles = []
+    for(const path of paths){
+      const name = path.split(/[\\/]/).pop() || path
+      const exist = quickData.files.find(f => f.path === path)
+      if(exist) continue
+      newFiles.push({
+        name: name,
+        path: path,
+        icon: null,
+        id: Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+      })
+    }
+    if(newFiles.length > 0){
+      quickData.files = quickData.files.concat(newFiles)
+      saveQuickData()
+      renderQuickPanel()
+    }
+    return
+  }
+
+  if (!isClipOpen) {
+    for(const path of paths){
+      const ext = path.split('.').pop()?.toLowerCase() || ''
+      const name = path.split(/[\\/]/).pop() || path
+      if(ext === 'md'){
+        const nextTheme = (currentTheme + 1) % THEME_MAX
+        invoke('launch_new_instance', { filePath: path, theme: nextTheme })
+      } else if(['png','jpg','jpeg','gif','bmp','webp','svg'].includes(ext)){
+        let imgPath = path
+        try {
+          if (typeof convertFileSrc === 'function') {
+            imgPath = convertFileSrc(path)
+          } else {
+            imgPath = 'file:///' + path.replace(/\\/g, '/')
+          }
+        } catch(e) {
+          imgPath = 'file:///' + path.replace(/\\/g, '/')
+        }
+        insertImageAtCursorByPath(imgPath, name)
+      } else if (['txt', 'json', 'xml', 'html', 'css', 'js', 'ts', 'py', 'rs', 'c', 'cpp', 'h', 'java', 'go', 'rb', 'php', 'sql', 'sh', 'bat', 'ps1', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf', 'log'].includes(ext)) {
+        try {
+          invoke('read_file', { path: path }).then(content => {
+            insertTextAtCursor(content)
+          }).catch(() => {})
+        } catch(e) {}
+      }
+    }
+  }
+}
+
+let dialogBallActive = false
+
+async function showBallForDialog() {
+  if (!dialogBallActive) {
+    dialogBallActive = true
+    await invoke('to_ball')
+  }
+}
+
+async function restoreFromDialog() {
+  if (dialogBallActive) {
+    dialogBallActive = false
+    await new Promise(resolve => setTimeout(resolve, 150))
+    await invoke('to_main')
+  }
+}
+
+
+
+
+async function callDialogWithRestore(dialogFn) {
+  let result = null
+  try {
+    result = await dialogFn()
+  } catch (e) {
+    const msg = (e && e.message) ? e.message : String(e)
+    const s = String(msg).toLowerCase()
+    
+    const isCancel = s.indexOf('cancel') !== -1 || s.indexOf('cancelled') !== -1
+      || s.indexOf('no folder selected') !== -1 || s.indexOf('no file selected') !== -1
+    if (!isCancel) {
+      alert('操作失败：' + msg)
+    }
+  }
+  return result
+}
+
+function triggerDragMinimize() {
+  if (windowState === 1) {
+    invoke('drag_start_minimize')
+  }
+}
+
+function triggerDragRestore() {
+  if (windowState === 2) {
+    setTimeout(() => {
+      invoke('drag_end_restore')
+    }, 150)
+  }
+}
+
+document.addEventListener('dragover', (e) => {
+  e.preventDefault()
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'copy'
+  }
+})
+
+document.addEventListener('dragend', () => {
+  triggerDragRestore()
+})
+
+document.addEventListener('keydown', async e=>{
+  const ctrl = e.ctrlKey || e.metaKey;
+  const key = e.key.toLowerCase();
+
+  if(key === 'tab' && !ctrl && !e.shiftKey && !e.altKey){
+    e.preventDefault();
+    if(tabSwitchLock) return;
+    tabSwitchLock = true;
+    await saveAllTabs();
+    if(windowState === 1){
+      windowState = 2;
+      invoke('to_ball')
+    }else{
+      windowState = 1;
+      invoke('to_main')
+    }
+    setTimeout(()=>{ tabSwitchLock = false; }, 50);
+    return;
+  }
+
+  if((e.key === 'F11' || e.key === 'PrintScreen') && !ctrl && !e.shiftKey && !e.altKey){
+    e.preventDefault();
+    if (isClipOpen) return
+    const base64 = await invoke('capture_screen')
+    if (!base64) return
+    insertImageAtCursor(base64)
+    return
+  }
+
+  if(key === 'escape'){
+    e.preventDefault();
+    await saveAllTabs();
+    invoke('mini_esc_close')
+    return;
+  }
+  if(ctrl){
+
+    if(key === 'r'){
+      e.preventDefault()
+      await reloadCurrentFileNoSave()
+      return
+    }
+
+    if(key === 'arrowup'){
+      e.preventDefault()
+      moveCursorToTop()
+      return
+    }
+
+    if(key === 'arrowdown'){
+      e.preventDefault()
+      moveCursorToEndAndFocus()
+      return
+    }
+
+    if(e.code === 'Equal' || key === '=' || key === '+'){
+      e.preventDefault()
+      await exportCurrentNote()
+      return
+    }
+
+    if(['s','n','o','1','2','3','4','5'].includes(key)){
+      e.preventDefault();
+      await saveAllTabs();
+      if(key === 's') return;
+      if(key === 'n') {
+        if(isClipOpen && activeTabIndex === TODO_INDEX) return createNewTodo();
+        if(isClipOpen && activeTabIndex === BLANK_INDEX) return;
+        return createNewTab();
+      }
+      if(key === 'o') return openFileNewTab();
+      if(key === '1') return hotkeySwitchTab(NOTE_TAB_START);
+      if(key === '2') return hotkeySwitchTab(PREVIEW_INDEX);
+      if(key === '3') return hotkeySwitchTab(BLANK_INDEX);
+      if(key === '4') return hotkeySwitchTab(CLIP_INDEX);
+      if(key === '5') return hotkeySwitchTab(TODO_INDEX);
+    }
+    if(key === 'u'){
+      e.preventDefault();
+      if(typeof openUrlImportModal === 'function') openUrlImportModal();
+      return;
+    }
+
+    if(['a','c','x','v','z'].includes(key)) return;
+    e.preventDefault();
+    return;
+  }
+})
+
+saveBtn.onclick = async ()=>{await saveAllTabs()}
+openBtn.onclick = openFileNewTab
+newBtn.onclick = ()=>{
+  if(isClipOpen && activeTabIndex === TODO_INDEX) {
+    createNewTodo();
+  } else if(isClipOpen && activeTabIndex === BLANK_INDEX) {
+    return;
+  } else {
+    createNewTab();
+  }
+}
+miniBtn.onclick = ()=>{
+  if(tabSwitchLock) return;
+  tabSwitchLock = true;
+  saveAllTabs();
+  windowState = 2;
+  invoke('to_ball');
+  setTimeout(()=>{ tabSwitchLock = false; }, 30);
+}
+closeBtn.onclick = async ()=>{await saveAllTabs();invoke('mini_esc_close')}
+
+async function init(){
+  setupEditorValueProxy()
+  
+  listen('request-save-exit', async () => {
+    try { await saveAllTabs() } catch (e) {}
+    invoke('mini_esc_close').catch(() => {})
+  })
+  try { await invoke('set_autostart', { enabled: true }) } catch {}
+  SAVE_DIR = await invoke('get_doc_path')
+  clipList = await invoke('get_clip_history')
+  renderClipList()
+  const savedTasks = await invoke('get_task_list')
+  if(savedTasks && savedTasks.length > 0) {
+    todoList = savedTasks
+  }
+  renderTodoList()
+  const savedQuick = await invoke('get_quick_list')
+  if(savedQuick && savedQuick.files && savedQuick.links) {
+    quickData = savedQuick
+    if(!Array.isArray(quickData.files)) quickData.files = []
+    if(!Array.isArray(quickData.links)) quickData.links = []
+    quickData.files = quickData.files.filter(f => f && f.name && f.path)
+    quickData.files.forEach(f => {
+      if(!f.id) f.id = Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+      if(!f.icon) f.icon = null
+    })
+    quickData.links = quickData.links.filter(l => l && l.url)
+    quickData.links.forEach(l => {
+      if(!l.id) l.id = Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+      if(!l.name) l.name = l.url
+    })
+  }
+  
+  
+  const initialFile = await invoke('get_initial_file').catch(() => null)
+  if (initialFile) {
+    await loadFileByPath(initialFile)
+    return
+  }
+
+  
+  
+  try {
+    const isFirst = await invoke('is_first_launch')
+    if (isFirst) {
+      const tut = await invoke('get_tutorial_content').catch(() => null)
+      if (tut) {
+        const tutName = '清枫速记使用教程.md'
+        const tutPath = SAVE_DIR + '/' + tutName
+        await invoke('save_note', { content: tut, filePath: tutPath })
+        tabList[NOTE_TAB_START] = { filePath: tutPath, fileName: tutName, content: tut }
+        editor.value = tut
+        updateTitle(tutName)
+        updateWordCount()
+        updatePreview()
+        renderTabBar()
+        invoke('tab_change', { tabIndex: NOTE_TAB_START })
+        await switchToPreview()
+        return
+      }
+    }
+  } catch (e) {
+    console.warn('首次启动教程加载失败，回退常规流程', e)
+  }
+
+  const latest = await invoke('get_latest_file')
+  activeTabIndex = NOTE_TAB_START
+  editorMode = 'edit'
+  editor.style.display = 'block'
+  mdPreview.style.display = 'none'
+  if(!latest) {
+    const newName = getTimeFileName()
+    const fullPath = SAVE_DIR + '/' + newName
+    await invoke('save_note', { content: "", filePath: fullPath })
+    tabList[NOTE_TAB_START] = {
+      filePath: fullPath,
+      fileName: newName,
+      content: ""
+    }
+    editor.value = ""
+    updateTitle(newName)
+    updateWordCount()
+    updatePreview()
+    renderTabBar()
+    invoke('tab_change', { tabIndex: activeTabIndex })
+    setTimeout(()=>{
+      cleanEditorHtml()
+      moveCursorToEndAndFocus()
+    }, 80)
+    setTimeout(()=>{
+      moveCursorToEndAndFocus()
+    }, 500)
+    return
+  }
+
+  tabList[NOTE_TAB_START] = latest
+  editor.value = latest.content || ""
+  updateTitle(latest.fileName)
+  updateWordCount()
+  updatePreview()
+  renderTabBar()
+  invoke('tab_change', { tabIndex: activeTabIndex })
+  setTimeout(()=>{
+    cleanEditorHtml()
+    moveCursorToEndAndFocus()
+  }, 80)
+  setTimeout(()=>{
+    moveCursorToEndAndFocus()
+  }, 500)
+}
+init()
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (!isClipOpen && editorMode === 'edit') {
+      moveCursorToEndAndFocus()
+    }
+  }, 300)
+})
+
+function formatClipTime(){
+  const d = new Date()
+  const m = String(d.getMonth()+1).padStart(2,'0')
+  const day = String(d.getDate()).padStart(2,'0')
+  const h = String(d.getHours()).padStart(2,'0')
+  const min = String(d.getMinutes()).padStart(2,'0')
+  return `${m}-${day} ${h}:${min}`
+}
+let lastClipStr = ""
+setInterval(async ()=>{
+  const txt = await getClipboardText()
+  if (!txt || txt === lastClipStr) return
+  lastClipStr = txt
+  const cleanTxt = cleanInvisibleText(txt)
+  invoke("push_clip_item", { item: { text: cleanTxt, time: formatClipTime() } })
+}, 600)
+
+
+editor.addEventListener('input', () => {
+  updateWordCount()
+  updatePreview()
+})
+
+function ensureEditorFocus() {
+  if (isClipOpen) return
+  if (editorMode !== 'edit') return
+  window.focus()
+  editor.focus()
+  const sel = window.getSelection()
+  if (sel.rangeCount === 0) {
+    moveCursorToEndAndFocus()
+  }
+}
+
+window.addEventListener('focus', () => {
+  setTimeout(ensureEditorFocus, 10)
+  setTimeout(ensureEditorFocus, 50)
+})
+
+window.addEventListener('activate', () => {
+  setTimeout(ensureEditorFocus, 10)
+  setTimeout(ensureEditorFocus, 50)
+})
+
+listen('force-focus-editor', () => {
+  setTimeout(ensureEditorFocus, 30)
+  setTimeout(ensureEditorFocus, 100)
+  setTimeout(ensureEditorFocus, 300)
+})
+
+function getCaretOffset() {
+  const sel = window.getSelection()
+  if (sel.rangeCount === 0) return 0
+  const range = sel.getRangeAt(0)
+  const endNode = range.endContainer
+  const endOffset = range.endOffset
+  let offset = 0
+  let found = false
+  function traverseNodes(node) {
+    if (found) return
+    if (node === endNode) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        offset += endOffset
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        for (let i = 0; i < endOffset && i < node.childNodes.length; i++) {
+          countNodeLength(node.childNodes[i])
+        }
+      }
+      found = true
+      return
+    }
+    if (node.nodeType === Node.TEXT_NODE) {
+      offset += node.textContent.length
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const tag = node.tagName.toLowerCase()
+      if (tag === 'br') {
+        offset += 1
+      } else if (tag === 'img') {
+        const alt = node.getAttribute('alt') || ''
+        const src = node.getAttribute('src') || ''
+        offset += `![${alt}](${src})`.length
+      } else {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          traverseNodes(node.childNodes[i])
+          if (found) return
+        }
+      }
+    }
+  }
+  function countNodeLength(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      offset += node.textContent.length
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const tag = node.tagName.toLowerCase()
+      if (tag === 'br') {
+        offset += 1
+      } else if (tag === 'img') {
+        const alt = node.getAttribute('alt') || ''
+        const src = node.getAttribute('src') || ''
+        offset += `![${alt}](${src})`.length
+      } else {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          countNodeLength(node.childNodes[i])
+        }
+      }
+    }
+  }
+  traverseNodes(editor)
+  return offset
+}
+
+function setCaretByOffset(offset) {
+  const text = editor.value
+  if (offset < 0) offset = 0
+  if (offset > text.length) offset = text.length
+  editor.focus()
+  const range = document.createRange()
+  const sel = window.getSelection()
+  let currentOffset = 0
+  let found = false
+  function traverseNodes(node) {
+    if (found) return
+    if (node.nodeType === Node.TEXT_NODE) {
+      const len = node.textContent.length
+      if (currentOffset + len >= offset) {
+        range.setStart(node, offset - currentOffset)
+        range.collapse(true)
+        found = true
+        return
+      }
+      currentOffset += len
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const tag = node.tagName.toLowerCase()
+      if (tag === 'br') {
+        if (currentOffset + 1 >= offset) {
+          range.setStartBefore(node)
+          range.collapse(true)
+          found = true
+          return
+        }
+        currentOffset += 1
+      } else if (tag === 'img') {
+        const alt = node.getAttribute('alt') || ''
+        const src = node.getAttribute('src') || ''
+        const imgMd = `![${alt}](${src})`
+        if (currentOffset + imgMd.length >= offset) {
+          range.setStartBefore(node)
+          range.collapse(true)
+          found = true
+          return
+        }
+        currentOffset += imgMd.length
+      } else {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          traverseNodes(node.childNodes[i])
+          if (found) return
+        }
+      }
+    }
+  }
+  traverseNodes(editor)
+  if (!found) {
+    range.selectNodeContents(editor)
+    range.collapse(false)
+  }
+  sel.removeAllRanges()
+  sel.addRange(range)
+}
+
+function cleanEditorHtml() {
+  const caretOffset = getCaretOffset()
+  const mdText = editor.value
+  editor.innerHTML = mdTextToEditorHtml(mdText)
+  setCaretByOffset(caretOffset)
+}
+
+
+function dataURLToBlob(dataURL){
+  try {
+    const m = dataURL.match(/^data:(.*?);base64,(.*)$/)
+    if(!m) return null
+    const mime = m[1] || 'image/png'
+    const bin = atob(m[2])
+    const arr = new Uint8Array(bin.length)
+    for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i)
+    return new Blob([arr], {type: mime})
+  } catch(e){ return null }
+}
+const IMG_EXT = {'image/png':'png','image/jpeg':'jpg','image/jpg':'jpg','image/gif':'gif','image/webp':'webp','image/bmp':'bmp','image/svg+xml':'svg'}
+
+
+function getImageDataUrl(img){
+  if (img._dataUrl) return img._dataUrl
+  const src = img.getAttribute('src') || ''
+  if (src.startsWith('data:image')) return src
+  try {
+    if ((img.complete || img.naturalWidth) && img.naturalWidth) {
+      const c = document.createElement('canvas')
+      c.width = img.naturalWidth; c.height = img.naturalHeight
+      c.getContext('2d').drawImage(img, 0, 0)
+      return c.toDataURL('image/png')
+    }
+  } catch(e){}
+  return null
+}
+function blobToDataURL(blob){
+  return new Promise((res, rej) => {
+    const r = new FileReader()
+    r.onload = () => res(r.result)
+    r.onerror = rej
+    r.readAsDataURL(blob)
+  })
+}
+
+async function cacheImageBlob(img){
+  const sync = getImageDataUrl(img)
+  if (sync) { img._dataUrl = sync; return }
+  const src = img.getAttribute('src') || ''
+  let dataUrl = null
+  if (src.startsWith('http')) {
+    
+    try { dataUrl = await invoke('fetch_image_bytes', { url: src }) } catch(e){}
+  } else if (src.startsWith('tauri://')) {
+    try { const resp = await fetch(src); if (resp && resp.ok) dataUrl = await blobToDataURL(await resp.blob()) } catch(e){}
+  }
+  if (dataUrl) img._dataUrl = dataUrl
+}
+document.addEventListener('load', (e) => {
+  const t = e.target
+  if (t && t.tagName === 'IMG') cacheImageBlob(t)
+}, true)
+document.querySelectorAll('img').forEach(cacheImageBlob)
+
+
+const _dragObserver = new MutationObserver((mutations) => {
+  for (const m of mutations) {
+    m.addedNodes.forEach((n) => {
+      if (!n || !n.querySelectorAll) return
+      if (n.tagName === 'IMG') cacheImageBlob(n)
+      else n.querySelectorAll('img').forEach(cacheImageBlob)
+    })
+  }
+})
+_dragObserver.observe(document.body, { childList: true, subtree: true })
+
+
+
+function onImgMouseDown(e){
+  if (e.button !== 0 || isClipOpen) return
+  const img = e.target && e.target.closest ? e.target.closest('img') : null
+  if (!img) return
+  
+  
+  try { img.setAttribute('draggable', 'false') } catch(_){}
+  
+  if (!(img._dataUrl && String(img._dataUrl).startsWith('data:image'))) {
+    cacheImageBlob(img)
+  }
+}
+
+function imgsInSelection(){
+  const sel = window.getSelection()
+  if (!sel || sel.isCollapsed || sel.rangeCount === 0) return []
+  const range = sel.getRangeAt(0)
+  let root = range.commonAncestorContainer
+  if (root.nodeType !== 1) root = root.parentElement
+  if (!root) return []
+  const all = Array.prototype.slice.call(root.querySelectorAll('img'))
+  return all.filter(function(im){ try { return range.intersectsNode(im) } catch(_){ return false } })
+}
+editor.addEventListener('mousedown', onImgMouseDown)
+mdPreview.addEventListener('mousedown', onImgMouseDown)
+
+
+
+document.addEventListener('dragstart', function(e){
+  let imgs = imgsInSelection()
+  if (imgs.length === 0) {
+    const t = e.target && e.target.closest ? e.target.closest('img') : null
+    if (t) imgs = [t]
+  }
+  if (imgs.length === 0) {
+    
+    e.preventDefault()
+    return
+  }
+  
+  e.preventDefault()
+  const items = imgs.map(function(img){
+    const du = getImageDataUrl(img)
+    return { src: img.getAttribute('src') || '', dataUrl: du || null }
+  })
+  invoke('start_native_file_drag', { items: items }).catch(function(){})
+}, true)
+
+noteEl.addEventListener('dragover', (e) => {
+  if (isClipOpen) return
+  e.preventDefault()
+  e.dataTransfer.dropEffect = 'copy'
+})
+
+function resolveLnkFile(path) {
+  return new Promise((resolve) => {
+    invoke('resolve_lnk', { path }).then(resolved => {
+      resolve(resolved || path)
+    }).catch(() => resolve(path))
+  })
+}
+
+noteEl.addEventListener('drop', async (e) => {
+  if (isClipOpen) return
+  e.preventDefault()
+  e.stopPropagation()
+
+  const dt = e.dataTransfer
+  if (!dt) return
+
+  if (dt.files && dt.files.length > 0) {
+    const paths = []
+    for (const file of Array.from(dt.files)) {
+      if (!file) continue
+      let path = file.path
+      if (!path && file.webkitRelativePath) {
+        path = file.webkitRelativePath
+      }
+      if (path) {
+        const lowerName = file.name.toLowerCase()
+        if (lowerName.endsWith('.md')) {
+          const nextTheme = (currentTheme + 1) % THEME_MAX
+          invoke('launch_new_instance', { filePath: path, theme: nextTheme })
+          continue
+        }
+        if (lowerName.endsWith('.lnk')) {
+          try {
+            const resolved = await resolveLnkFile(path)
+            if (resolved && resolved.toLowerCase().endsWith('.md')) {
+              const nextTheme = (currentTheme + 1) % THEME_MAX
+              invoke('launch_new_instance', { filePath: resolved, theme: nextTheme })
+              continue
+            }
+          } catch {}
+        }
+        paths.push(path)
+      } else if (file.type && file.type.startsWith('image/')) {
+        const dataUrl = await new Promise((res) => {
+          const reader = new FileReader()
+          reader.onload = () => res(reader.result)
+          reader.onerror = () => res(null)
+          reader.readAsDataURL(file)
+        })
+        if (dataUrl) insertImageAtCursor(dataUrl)
+        return
+      }
+    }
+    if (paths.length > 0) {
+      handleFileDrop(paths)
+      return
+    }
+  }
+
+  const html = dt.getData('text/html')
+  const text = dt.getData('text/plain')
+
+  if (html) {
+    const imgMatch = html.match(/<img[^>]+src=["']([^"']+)["']/i)
+    if (imgMatch && imgMatch[1]) {
+      const imgSrc = imgMatch[1]
+      const altMatch = html.match(/<img[^>]+alt=["']([^"']*)["']/i)
+      const alt = altMatch ? altMatch[1] : '图片'
+      insertImageAtCursorByPath(imgSrc, alt)
+      return
+    }
+  }
+
+  if (text?.trim()) {
+    insertTextAtCursor(text)
+    return
+  }
+
+  if (html) {
+    insertTextAtCursor(html)
+  }
+  setTimeout(ensureEditorFocus, 0)
+  setTimeout(ensureEditorFocus, 50)
+})
+
+editor.addEventListener('paste', async (e) => {
+  if (isClipOpen) return
+  const items = e.clipboardData.items
+  let imgItem = null
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].type.startsWith('image/')) {
+      imgItem = items[i]
+      break
+    }
+  }
+  if (imgItem) {
+    e.preventDefault()
+    const blob = imgItem.getAsFile()
+    const dataUrl = await new Promise((res) => {
+      const reader = new FileReader()
+      reader.onload = () => res(reader.result)
+      reader.onerror = () => res(null)
+      reader.readAsDataURL(blob)
+    })
+    if (dataUrl) insertImageAtCursor(dataUrl)
+    return
+  }
+  const text = e.clipboardData.getData('text/plain')
+  if (text) {
+    e.preventDefault()
+    insertTextAtCursor(cleanInvisibleText(text))
+  }
+})
+</script>
+
+<style id="urlImportStyle">
+#urlImportModal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45)}
+#urlImportModal.show{display:flex}
+#urlImportModal .box{width:460px;max-width:90vw;background:#26262b;color:#e8e8ea;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.5);font-family:inherit;overflow:hidden}
+#urlImportModal .hd{padding:14px 16px;font-size:15px;font-weight:600;border-bottom:1px solid #3a3a40}
+#urlImportModal .bd{padding:16px}
+#urlImportModal .bd .tip{font-size:12px;color:#9a9aa2;margin-bottom:8px;line-height:1.5}
+#urlImportModal input{width:100%;box-sizing:border-box;padding:9px 11px;font-size:14px;background:#1c1c20;color:#e8e8ea;border:1px solid #3a3a40;border-radius:7px;outline:none}
+#urlImportModal input:focus{border-color:#4a8cff}
+#urlImportModal .ft{display:flex;justify-content:flex-end;gap:10px;padding:12px 16px;border-top:1px solid #3a3a40}
+#urlImportModal button{padding:7px 18px;font-size:13px;border:none;border-radius:7px;cursor:pointer}
+#urlImportModal .ok{background:#4a8cff;color:#fff}
+#urlImportModal .cancel{background:#3a3a40;color:#cfcfd6}
+#urlImportModal .err{color:#ff6b6b;font-size:12px;margin-top:8px;min-height:14px;white-space:pre-wrap}
+</style>
+<div id="urlImportModal">
+  <div class="box">
+    <div class="hd">导入网页为 Markdown</div>
+    <div class="bd">
+      <div class="tip">输入网页链接，确定后会将正文转为 Markdown 并在当前窗口打开（原文件自动保存，图片会下载内嵌进笔记、可离线查看）</div>
+      <input id="urlImportInput" type="text" placeholder="https://example.com/article" spellcheck="false" />
+      <div class="err" id="urlImportErr"></div>
+    </div>
+    <div class="ft">
+      <button class="cancel" id="urlImportCancel">取消</button>
+      <button class="ok" id="urlImportOk">确定</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const modal = document.getElementById('urlImportModal');
+  const input = document.getElementById('urlImportInput');
+  const errEl = document.getElementById('urlImportErr');
+  const okBtn = document.getElementById('urlImportOk');
+  const cancelBtn = document.getElementById('urlImportCancel');
+  let busy = false;
+
+  window.openUrlImportModal = function(){
+    if(modal.classList.contains('show')) return;
+    errEl.textContent = '';
+    input.value = '';
+    modal.classList.add('show');
+    setTimeout(function(){ try { input.focus(); } catch(e){} }, 30);
+  };
+  function closeModal(){ modal.classList.remove('show'); busy = false; okBtn.disabled = false; cancelBtn.disabled = false; }
+
+  
+  
+  function realImgSrc(img){
+    
+    const pic = img.closest && img.closest('picture');
+    if(pic){
+      const sources = pic.querySelectorAll('source');
+      for(let i=0;i<sources.length;i++){
+        const ss = (sources[i].getAttribute('srcset')||sources[i].getAttribute('data-srcset')||'').trim();
+        if(ss){ const first = ss.split(',')[0].trim().split(/\s+/)[0]; if(first && !/^data:/i.test(first)) return first; }
+      }
+    }
+    
+    const known = ['data-src','data-original','data-lazy-src','data-lazy','data-actualsrc','data-echo','data-imgsrc','data-imgurl','data-thumburl','data-url','data-srcset'];
+    for(const k of known){
+      const v = (img.getAttribute(k)||'').trim();
+      if(v && !/^data:/i.test(v)){
+        const first = v.split(',')[0].trim().split(/\s+/)[0];
+        if(first) return first;
+      }
+    }
+    
+    const attrs = img.attributes;
+    for(let i=0;i<attrs.length;i++){
+      const an = attrs[i].name;
+      if(an === 'src' || an === 'srcset' || an.indexOf('data-') !== 0) continue;
+      const v = attrs[i].value.trim();
+      if(!v || /^data:/i.test(v)) continue;
+      if(/\.(jpg|jpeg|png|gif|webp|avif|bmp|svg)(\?|#|$)/i.test(v) || /^(https?:|\/\/|\/)/i.test(v)){
+        const first = v.split(',')[0].trim().split(/\s+/)[0];
+        if(first) return first;
+      }
+    }
+    
+    const ss = (img.getAttribute('srcset')||'').trim();
+    if(ss){ const first = ss.split(',')[0].trim().split(/\s+/)[0]; if(first) return first; }
+    
+    return (img.getAttribute('src')||'').trim();
+  }
+
+  
+  
+  function htmlToMarkdown(html, baseUrl, imgMap){
+    const doc = new DOMParser().parseFromString(html || '', 'text/html');
+    ['script','style','link','noscript','template','iframe','svg','meta','head','nav','form'].forEach(function(t){
+      const nodes = doc.querySelectorAll(t);
+      for(let i=0;i<nodes.length;i++) nodes[i].remove();
+    });
+    function abs(u){
+      if(!u) return '';
+      const s = String(u).trim();
+      if(!s) return '';
+      if(/^(data:|#|mailto:|javascript:)/i.test(s)) return s;
+      try { return new URL(s, baseUrl || undefined).href; } catch(e){ return s; }
+    }
+    function finalSrc(u){ const a = abs(u); return (imgMap && imgMap[a]) ? imgMap[a] : a; }
+    function inlineText(node){
+      let s = '';
+      node.childNodes.forEach(function(ch){
+        if(ch.nodeType === 3){ s += ch.nodeValue; }
+        else if(ch.nodeType === 1){
+          const tag = ch.tagName.toLowerCase();
+          if(tag === 'br'){ s += '\n'; }
+          else if(tag === 'img'){ const alt = (ch.getAttribute('alt')||'').replace(/\]/g,''); const src = finalSrc(realImgSrc(ch)); if(src) s += '!['+alt+']('+src+')'; }
+          else if(tag === 'a'){ const href = abs(ch.getAttribute('href')); const t = inlineText(ch); s += href ? '['+t+']('+href+')' : t; }
+          else if(tag === 'strong' || tag === 'b'){ s += '**'+inlineText(ch)+'**'; }
+          else if(tag === 'em' || tag === 'i'){ s += '*'+inlineText(ch)+'*'; }
+          else if(tag === 'code'){ s += '`'+ (ch.textContent||'') +'`'; }
+          else if(tag === 'del' || tag === 's'){ s += '~~'+inlineText(ch)+'~~'; }
+          else { s += inlineText(ch); }
+        }
+      });
+      return s;
+    }
+    function block(node, depth){
+      let out = '';
+      node.childNodes.forEach(function(ch){
+        if(ch.nodeType === 3){
+          out += ch.nodeValue.replace(/[ \t]+/g,' ');
+          return;
+        }
+        if(ch.nodeType !== 1) return;
+        const tag = ch.tagName.toLowerCase();
+        switch(tag){
+          case 'h1': out += '\n\n# ' + inlineText(ch).trim() + '\n'; break;
+          case 'h2': out += '\n\n## ' + inlineText(ch).trim() + '\n'; break;
+          case 'h3': out += '\n\n### ' + inlineText(ch).trim() + '\n'; break;
+          case 'h4': out += '\n\n#### ' + inlineText(ch).trim() + '\n'; break;
+          case 'h5': out += '\n\n##### ' + inlineText(ch).trim() + '\n'; break;
+          case 'h6': out += '\n\n###### ' + inlineText(ch).trim() + '\n'; break;
+          case 'p': case 'div': case 'section': case 'article': case 'main': case 'header': case 'footer': case 'aside':
+            out += '\n\n' + block(ch, depth).trim() + '\n'; break;
+          case 'br': out += '\n'; break;
+          case 'hr': out += '\n\n---\n\n'; break;
+          case 'ul': out += '\n' + listItems(ch, depth, false) + '\n'; break;
+          case 'ol': out += '\n' + listItems(ch, depth, true) + '\n'; break;
+          case 'blockquote': out += '\n' + block(ch, depth).split('\n').map(function(l){ return l ? '> '+l : l; }).join('\n') + '\n'; break;
+          case 'pre': { const code = (ch.textContent||'').replace(/\n$/,''); const lang = ((ch.querySelector('code') && ch.querySelector('code').getAttribute('class'))||'').replace(/.*language-(\w+).*/,'$1'); out += '\n\n```'+lang+'\n'+code+'\n```\n\n'; break; }
+          case 'img': { const alt = (ch.getAttribute('alt')||'').replace(/\]/g,''); const src = finalSrc(realImgSrc(ch)); if(src) out += '\n\n!['+alt+']('+src+')\n\n'; break; }
+          case 'table': out += '\n\n' + tableToMd(ch) + '\n\n'; break;
+          case 'a': { const href = abs(ch.getAttribute('href')); const t = inlineText(ch); out += href ? '['+t+']('+href+')' : t; break; }
+          case 'strong': case 'b': out += '**'+inlineText(ch)+'**'; break;
+          case 'em': case 'i': out += '*'+inlineText(ch)+'*'; break;
+          case 'code': out += '`'+ (ch.textContent||'') +'`'; break;
+          case 'span': case 'font': case 'label': out += inlineText(ch); break;
+          default: out += block(ch, depth);
+        }
+      });
+      return out;
+    }
+    function listItems(ul, depth, ordered){
+      let res = ''; let i = 1;
+      ul.childNodes.forEach(function(li){
+        if(li.nodeType !== 1) return;
+        const t = li.tagName.toLowerCase();
+        if(t !== 'li'){ res += block(li, depth); return; }
+        const indent = '  '.repeat(depth);
+        const prefix = ordered ? (i+'. ') : '- ';
+        const textPart = block(li, depth+1).trim();
+        res += indent + prefix + textPart + '\n';
+        i++;
+        li.childNodes.forEach(function(c){
+          if(c.nodeType === 1){
+            const ct = c.tagName.toLowerCase();
+            if(ct === 'ul') res += listItems(c, depth+1, false);
+            else if(ct === 'ol') res += listItems(c, depth+1, true);
+          }
+        });
+      });
+      return res;
+    }
+    function tableToMd(table){
+      const rows = table.querySelectorAll('tr');
+      if(!rows.length) return '';
+      function cells(tr){ return [].slice.call(tr.querySelectorAll('th,td')).map(function(td){ return inlineText(td).trim().replace(/\|/g,'\\|').replace(/\n/g,' '); }); }
+      const head = cells(rows[0]);
+      let md = '| ' + head.join(' | ') + ' |\n';
+      md += '| ' + head.map(function(){ return '---'; }).join(' | ') + ' |\n';
+      for(let r=1;r<rows.length;r++){ md += '| ' + cells(rows[r]).join(' | ') + ' |\n'; }
+      return md;
+    }
+    let md = block(doc.body, 0);
+    md = md.replace(/[ \t]+\n/g,'\n').replace(/ {2,}/g,' ').replace(/\n{3,}/g,'\n\n').replace(/^\n+/,'').replace(/\n+$/,'').trim();
+    return md;
+  }
+
+  
+  function collectImgUrls(html, baseUrl){
+    const doc = new DOMParser().parseFromString(html || '', 'text/html');
+    const seen = {};
+    const out = [];
+    const nodes = doc.querySelectorAll('img, source');
+    for(let i=0;i<nodes.length;i++){
+      const el = nodes[i];
+      let u;
+      if(el.tagName.toLowerCase() === 'source'){
+        u = (el.getAttribute('srcset')||el.getAttribute('data-srcset')||'').trim();
+        if(u){ u = u.split(',')[0].trim().split(/\s+/)[0]; }
+      } else {
+        u = realImgSrc(el);
+      }
+      if(!u || /^data:/i.test(u)) continue;
+      let a;
+      try { a = new URL(u, baseUrl || undefined).href; } catch(e){ a = u; }
+      if(a && !seen[a]){ seen[a] = true; out.push(a); }
+    }
+    return out;
+  }
+
+  async function doImport(){
+    if(busy) return;
+    const url = input.value.trim();
+    if(!url){ errEl.textContent = '请输入链接'; return; }
+    if(!/^https?:\/\//i.test(url)){ errEl.textContent = '链接需以 http:// 或 https:// 开头'; return; }
+    busy = true; okBtn.disabled = true; cancelBtn.disabled = true;
+    errEl.textContent = '正在抓取并转换…';
+    try{
+      await saveAllTabs();                       
+      const html = await invoke('fetch_url_html', { url });
+      if(!html || !html.trim()){ throw new Error('页面内容为空'); }
+      let imgMap = {};
+      const imgUrls = collectImgUrls(html, url);
+      if(imgUrls.length){
+        errEl.textContent = '正在抓取、转换并下载图片(' + imgUrls.length + ')…';
+        try { imgMap = await invoke('fetch_images_as_dataurls', { urls: imgUrls, referer: url }) || {}; } catch(e){ imgMap = {}; }
+      }
+      const md = htmlToMarkdown(html, url, imgMap);
+      const newName = getTimeFileName();
+      const newPath = SAVE_DIR + '/' + newName;
+      await invoke('save_note', { content: md, filePath: newPath });  
+      tabList[NOTE_TAB_START] = { filePath: newPath, fileName: newName, content: md };
+      editor.value = md;
+      updateTitle(newName);
+      updateWordCount();
+      renderTabBar();
+      closeModal();
+      await switchToPreview();                   
+      updatePreview();
+    }catch(e){
+      errEl.textContent = '失败：' + (e && e.message ? e.message : e);
+    }finally{
+      busy = false; okBtn.disabled = false; cancelBtn.disabled = false;
+    }
+  }
+
+  okBtn.onclick = doImport;
+  cancelBtn.onclick = closeModal;
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); doImport(); }
+    else if(e.key === 'Escape'){ e.preventDefault(); closeModal(); }
+  });
+  modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); });
+})();
+</script>
+</body>
+</html>

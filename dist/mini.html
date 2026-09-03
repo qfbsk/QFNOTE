@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="theme0">
+<head>
+<meta charset="UTF-8">
+<title>悬浮圆球</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{
+  width:100vw;height:100vh;
+  background:transparent;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.ball{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  transition:background 0.3s, box-shadow 0.3s;
+  cursor:grab;
+  -webkit-app-region: drag;
+}
+html.theme0 .ball{
+  background:rgba(180,160,230,0.6);
+  box-shadow:0 0 12px rgba(150,130,210,0.4);
+}
+html.theme1 .ball{
+  background:rgba(220,190,130,0.6);
+  box-shadow:0 0 12px rgba(190,160,100,0.4);
+}
+html.theme2 .ball{
+  background:rgba(120,200,170,0.6);
+  box-shadow:0 0 12px rgba(90,170,140,0.4);
+}
+html.theme3 .ball{
+  background:rgba(230,140,170,0.6);
+  box-shadow:0 0 12px rgba(200,110,140,0.4);
+}
+html.theme4 .ball{
+  background:rgba(110,170,220,0.6);
+  box-shadow:0 0 12px rgba(80,140,190,0.4);
+}
+html.theme5 .ball{
+  background:rgba(110,120,140,0.7);
+  box-shadow:0 0 12px rgba(60,65,75,0.5);
+}
+</style>
+</head>
+<body>
+<div class="ball"></div>
+<script type="module">
+const { invoke } = window.__TAURI__.core;
+const { listen } = window.__TAURI__.event;
+const { getCurrentWindow } = window.__TAURI__.window;
+const htmlRoot = document.documentElement
+const ballWindow = getCurrentWindow()
+
+const applyTheme = (themeNum) => {
+  for(let i=0;i<6;i++) htmlRoot.classList.remove(`theme${i}`)
+  htmlRoot.classList.add(`theme${themeNum}`)
+}
+
+listen('sync-theme', (event) => applyTheme(event.payload))
+
+invoke('get_current_theme').then((t) => applyTheme(t)).catch(() => {})
+
+// 右键点击切换到主窗口
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault()
+  e.stopPropagation()
+  invoke('to_main').catch(() => {})
+})
+
+// 左键双击切换主窗口
+document.addEventListener('dblclick', (e) => {
+  e.preventDefault()
+  e.stopPropagation()
+  invoke('to_main').catch(() => {})
+})
+
+// 键盘事件
+document.addEventListener('keydown', async e=>{
+  if(e.key === 'Escape'){
+    e.preventDefault()
+    invoke('mini_esc_close')
+    return
+  }
+
+  if(e.key === 'Tab'){
+    e.preventDefault()
+    invoke('to_main').catch(() => {})
+    return
+  }
+
+  if(e.key === 'F11' || e.key === 'PrintScreen'){
+    e.preventDefault()
+    try {
+      const base64 = await invoke('capture_screen')
+      if (base64) {
+        invoke('mini_insert_screenshot', { imgBase64: base64 }).catch(() => {})
+      }
+    } catch {}
+    return
+  }
+  e.preventDefault()
+  e.stopPropagation()
+})
+
+
+// 剪贴板捕获统一由主窗口全局轮询负责(主窗隐藏时 JS 仍在跑),
+// 小球窗不再独立轮询, 避免同一份内容被两个窗口各推一次(重复条目 + 双倍重绘)
+// let miniLastClip = ""
+// setInterval(async () => { ... }, 700)  -- 已移除
+</script>
+</body>
+</html>
